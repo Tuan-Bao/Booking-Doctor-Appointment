@@ -5,15 +5,15 @@ import { StatusCodes } from "http-status-codes";
 export const updateDoctorSchedule = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const updateData = { ...req.body };
+    const { off_date } = req.body;
 
-    if (!updateData) {
-      throw new BadRequestError("At least one field must be provided.");
+    if (!off_date) {
+      throw new BadRequestError("At least off_date must be provided.");
     }
 
     const result = await scheduleService.updateDoctorSchedule(
       user_id,
-      updateData
+      off_date
     );
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
