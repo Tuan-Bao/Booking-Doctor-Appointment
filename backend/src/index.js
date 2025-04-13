@@ -16,6 +16,10 @@ import medicalRecordRouter from "./routes/medicalRecordRouter.js";
 import prescriptionRouter from "./routes/prescriptionRouter.js";
 import paymentRouter from "./routes/paymentRouter.js";
 
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { swaggerOptions } from "./config/swaggerOptions.js";
+
 configDotenv({ path: "src/.env" });
 
 const app = express();
@@ -27,6 +31,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // app.get("/", (req, res) => {
 //   res.send("Hello World!");
 // });
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use("/api/patient", patientRouter);
