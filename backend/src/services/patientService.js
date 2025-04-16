@@ -40,6 +40,9 @@ export const registerPatient = async (username, password, email) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -72,6 +75,11 @@ export const verifyEmail = async (email, otp_code) => {
 
     return { message: "Success" };
   } catch (error) {
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -103,6 +111,11 @@ export const loginPatient = async (email, password) => {
       token,
     };
   } catch (error) {
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -149,6 +162,11 @@ export const changePassword = async (user_id, oldPassword, newPassword) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -169,6 +187,9 @@ export const getAllPatients = async () => {
     }
     return { message: "Success", patients };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -196,6 +217,9 @@ export const getPatientProfile = async (user_id) => {
 
     return { message: "Success", user };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -274,6 +298,9 @@ export const updatePatientProfile = async (user_id, updateData) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -320,6 +347,9 @@ export const getPatientAppointments = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -375,6 +405,9 @@ export const getPatientPayments = async (user_id) => {
       appointments: formattedAppointments, // chứa cả payment
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -409,6 +442,9 @@ export const getDoctorProfileByPatient = async (user_id) => {
       user,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -452,6 +488,9 @@ export const getDoctorAppointmentsByPatient = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

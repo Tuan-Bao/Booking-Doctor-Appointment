@@ -41,6 +41,11 @@ export const addFeedback = async (appointment_id, rating, comment) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -69,6 +74,9 @@ export const updateFeedback = async (feedback_id, rating, comment) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

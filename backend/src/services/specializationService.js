@@ -15,6 +15,9 @@ export const getAllSpecializations = async () => {
 
     return { message: "Success", specializations };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -69,6 +72,9 @@ export const createSpecialization = async (name, fees, imageFile) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -120,6 +126,11 @@ export const updateSpecialization = async (specialization_id, updateData) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -139,6 +150,9 @@ export const deleteSpecialization = async (specialization_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

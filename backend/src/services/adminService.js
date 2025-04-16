@@ -61,6 +61,11 @@ export const loginAdmin = async (email, password) => {
       token,
     };
   } catch (error) {
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -107,6 +112,9 @@ export const getPatientAppointmentsByAdmin = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -141,6 +149,9 @@ export const getDoctorProfileByAdmin = async (user_id) => {
       user,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -188,6 +199,9 @@ export const getDoctorAppointmentsByAdmin = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

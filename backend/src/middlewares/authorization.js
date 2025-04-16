@@ -19,7 +19,12 @@ const authorized = (roles) => async (req, res, next) => {
     }
     next();
   } catch (error) {
-    throw new Error(error.message);
+    if (error instanceof NotFoundError) {
+      next(error);
+    } else if (error instanceof ForbiddenError) {
+      next(error);
+    }
+    next(new Error(error.message));
   }
 };
 

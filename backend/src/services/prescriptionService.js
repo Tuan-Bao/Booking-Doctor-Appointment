@@ -40,6 +40,11 @@ export const addPrescription = async (appointment_id, medicine_details) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -64,6 +69,9 @@ export const updatePrescription = async (prescription_id, medicine_details) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

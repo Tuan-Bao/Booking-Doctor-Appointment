@@ -135,6 +135,11 @@ export const bookAppointment = async (
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -171,6 +176,11 @@ export const acceptAppointment = async (appointment_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -214,6 +224,11 @@ export const cancelAppointmentByPatient = async (appointment_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -257,6 +272,11 @@ export const cancelAppointmentByDoctor = async (appointment_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -313,6 +333,11 @@ export const completeAppointment = async (appointment_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -354,6 +379,11 @@ export const markPatientNotComing = async (appointment_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -390,6 +420,9 @@ export const getAllAppointments = async () => {
     }));
     return { message: "Success", appointments: formattedAppointments };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -493,6 +526,9 @@ export const getAppointmentsDetails = async (appointment_id) => {
 
     return { message: "Success", appointmentDetails: result };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

@@ -42,6 +42,11 @@ export const loginDoctor = async (email, password) => {
       token,
     };
   } catch (error) {
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -71,6 +76,9 @@ export const getAllDoctors = async () => {
       doctors,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -106,6 +114,9 @@ export const getDoctorProfile = async (user_id) => {
       user,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -161,6 +172,9 @@ export const getDoctorAppointments = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -210,6 +224,9 @@ export const getPatientAppointmentsByDoctor = async (user_id) => {
       appointments: formattedAppointments,
     };
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -283,6 +300,9 @@ export const addDoctor = async (doctorData) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 }; // add user + doctor + schedule
@@ -340,6 +360,9 @@ export const updateDoctorProfile = async (user_id, updateData) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };
@@ -362,6 +385,9 @@ export const deleteDoctor = async (user_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

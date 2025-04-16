@@ -101,6 +101,11 @@ export const updateDoctorSchedule = async (user_id, off_date) => {
     };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof BadRequestError) {
+      throw error;
+    } else if (error instanceof NotFoundError) {
+      throw error;
+    }
     throw new Error(error.message);
   }
 };

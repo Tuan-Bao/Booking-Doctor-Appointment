@@ -2,6 +2,7 @@ import express from "express";
 import * as appointmentController from "../controllers/appoinmentController.js";
 import authentication from "../middlewares/authentication.js";
 import authorized from "../middlewares/authorization.js";
+import validateDate from "../middlewares/validateDate.js";
 
 const appointmentRouter = express.Router();
 
@@ -51,6 +52,7 @@ appointmentRouter.post(
   "/book",
   authentication,
   authorized(["patient"]),
+  validateDate,
   appointmentController.bookAppointment
 );
 
