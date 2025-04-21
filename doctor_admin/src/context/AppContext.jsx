@@ -4,7 +4,6 @@ import axios from "axios";
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -31,19 +30,15 @@ export const AppProvider = ({ children }) => {
       const data = response.data;
 
       if (data.message === "Success") {
-        setUser({
-          token: data.token,
-          role: data.role,
-        });
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
         return { success: true, role: data.role };
       } else {
-        throw new Error(data.message || "Đăng nhập thất bại");
+        throw new Error(data.message || "Login failed");
       }
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || err.message || "Đăng nhập thất bại";
+        err.response?.data?.message || err.message || "Login failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -52,17 +47,20 @@ export const AppProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("role");
   };
 
+  const contextValue = {
+    loading,
+    error,
+    login,
+    logout,
+    API_URL,
+  };
+
   return (
-    <AppContext.Provider
-      value={{ user, loading, error, login, logout, API_URL }}
-    >
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 };
 

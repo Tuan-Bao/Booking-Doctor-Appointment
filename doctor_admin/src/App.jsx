@@ -14,7 +14,11 @@ import AdminDoctorList from "./pages/Admin/Doctors List/DoctorList";
 import AdminPatientList from "./pages/Admin/Patients List/PatientList";
 import AdminSpecializations from "./pages/Admin/Specializations/Specializations";
 
+import DoctorHeader from "./components/Doctor/Header/Header";
+import DoctorNavBar from "./components/Doctor/NavBar/NavBar";
 import DoctorDashboard from "./pages/Doctor/Dashboard/Dashboard";
+import DoctorAppointments from "./pages/Doctor/Appointments/Appointments";
+import DoctorProfile from "./pages/Doctor/Profile/Profile";
 
 const PrivateRoute = ({ children, role }) => {
   const storedRole = localStorage.getItem("role");
@@ -42,7 +46,18 @@ const PrivateRoute = ({ children, role }) => {
           </div>
         </>
       )}
-      {role !== "admin" && children}
+      {role == "doctor" && (
+        <>
+          <DoctorHeader />
+          <DoctorNavBar />
+          <div
+            className="doctor-content"
+            style={{ marginLeft: "250px", marginTop: "50px", padding: "20px" }}
+          >
+            {children}
+          </div>
+        </>
+      )}
     </>
   );
 };
@@ -104,6 +119,24 @@ function App() {
             element={
               <PrivateRoute role="doctor">
                 <DoctorDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/doctor/appointments"
+            element={
+              <PrivateRoute role="doctor">
+                <DoctorAppointments />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/doctor/profile"
+            element={
+              <PrivateRoute role="doctor">
+                <DoctorProfile />
               </PrivateRoute>
             }
           />
