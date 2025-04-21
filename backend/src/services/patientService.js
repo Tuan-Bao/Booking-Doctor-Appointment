@@ -494,3 +494,38 @@ export const getDoctorAppointmentsByPatient = async (user_id) => {
     throw new Error(error.message);
   }
 };
+
+export const getPaymentById = async (user_id, payment_id) => {
+  try {
+    const user = await User.findByPk(user_id, {
+      attributes: { exclude: ["password"] },
+      include: [{ model: Patient, as: "patient" }],
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const { patient } = user;
+    if (!patient) {
+      throw new NotFoundError("Patient not found");
+    }
+
+    const payment = await Payment.findByPk(payment_id);
+
+    if (!payment) {
+      throw new NotFoundError("Payment not found");
+    }
+
+    return {
+      message: "Success",
+      user,
+      payment,
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};

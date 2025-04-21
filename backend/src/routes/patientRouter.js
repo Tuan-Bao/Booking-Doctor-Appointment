@@ -752,4 +752,11 @@ patientRouter.get(
   patientController.getDoctorAppointmentsByPatient
 );
 
+patientRouter.get(
+  "/payments/:payment_id",
+  authentication,
+  authorized(["patient"]),
+  patientController.getPaymentById
+);
+
 export default patientRouter;

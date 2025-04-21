@@ -153,3 +153,14 @@ export const getDoctorAppointmentsByPatient = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getPaymentById = async (req, res, next) => {
+  try {
+    const { user_id } = req.user;
+    const { payment_id } = req.params;
+    const result = await patientService.getPaymentById(user_id, payment_id);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
