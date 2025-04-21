@@ -5,6 +5,7 @@ import {
   BarChartOutlined,
   CalendarOutlined,
   ProfileOutlined,
+  ScheduleOutlined,
 } from "@ant-design/icons";
 import "./NavBar.css";
 
@@ -27,6 +28,11 @@ const NavBar = () => {
       key: "/doctor/profile",
       icon: <ProfileOutlined />,
       label: "Profile",
+    },
+    {
+      key: "/doctor/schedule",
+      icon: <ScheduleOutlined />,
+      label: "Schedule",
     },
   ];
 

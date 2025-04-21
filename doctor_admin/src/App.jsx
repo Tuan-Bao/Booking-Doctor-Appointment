@@ -19,6 +19,7 @@ import DoctorNavBar from "./components/Doctor/NavBar/NavBar";
 import DoctorDashboard from "./pages/Doctor/Dashboard/Dashboard";
 import DoctorAppointments from "./pages/Doctor/Appointments/Appointments";
 import DoctorProfile from "./pages/Doctor/Profile/Profile";
+import DoctorSchedule from "./pages/Doctor/Schedule/Schedule";
 
 const PrivateRoute = ({ children, role }) => {
   const storedRole = localStorage.getItem("role");
@@ -137,6 +138,15 @@ function App() {
             element={
               <PrivateRoute role="doctor">
                 <DoctorProfile />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/doctor/schedule"
+            element={
+              <PrivateRoute role="doctor">
+                <DoctorSchedule />
               </PrivateRoute>
             }
           />
