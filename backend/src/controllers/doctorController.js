@@ -134,3 +134,13 @@ export const deleteDoctor = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getDoctorFeedback = async (req, res, next) => {
+  try {
+    const { user_id } = req.user;
+    const result = await doctorService.getDoctorFeedback(user_id);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -517,4 +517,11 @@ doctorRouter.delete(
   doctorController.deleteDoctor
 );
 
+doctorRouter.get(
+  "/feedback",
+  authentication,
+  authorized(["doctor"]),
+  doctorController.getDoctorFeedback
+);
+
 export default doctorRouter;

@@ -11,6 +11,7 @@ const Patient = db.Patient;
 const Specialization = db.Specialization;
 const Schedule = db.Schedule;
 const Appointment = db.Appointment;
+const Feedback = db.Feedback;
 
 export const loginDoctor = async (email, password) => {
   try {
@@ -385,6 +386,50 @@ export const deleteDoctor = async (user_id) => {
     return { message: "Success" };
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const getDoctorFeedback = async (user_id) => {
+  try {
+    const user = await User.findByPk(user_id, {
+      attributes: { exclude: ["password"] },
+      include: [{ model: Doctor, as: "doctor" }],
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const { doctor } = user;
+    if (!doctor) {
+      throw new NotFoundError("Doctor not found");
+    }
+
+    const doctor_id = doctor.doctor_id;
+
+    const appointments = await Appointment.findAll({
+      where: { doctor_id },
+      include: [
+        {
+          model: Feedback,
+          as: "feedback",
+        },
+      ],
+    });
+
+    if (appointments.length === 0) {
+      throw new NotFoundError("Appointments not found");
+    }
+
+    return {
+      message: "Success",
+      appointments,
+    };
+  } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
     }
