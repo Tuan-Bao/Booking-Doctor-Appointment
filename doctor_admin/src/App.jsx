@@ -6,7 +6,14 @@ import {
 } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import Login from "./pages/Login/Login";
+import AdminHeader from "./components/Admin/Header/Header";
+import AdminNavBar from "./components/Admin/NavBar/NavBar";
 import AdminDashboard from "./pages/Admin/Dashboard/Dashboard";
+import AdminAppointments from "./pages/Admin/Appointments/Appointments";
+import AdminDoctorList from "./pages/Admin/Doctors List/DoctorList";
+import AdminPatientList from "./pages/Admin/Patients List/PatientList";
+import AdminSpecializations from "./pages/Admin/Specializations/Specializations";
+
 import DoctorDashboard from "./pages/Doctor/Dashboard/Dashboard";
 
 const PrivateRoute = ({ children, role }) => {
@@ -21,7 +28,23 @@ const PrivateRoute = ({ children, role }) => {
     return <Navigate to="/login" />;
   }
 
-  return children;
+  return (
+    <>
+      {role === "admin" && (
+        <>
+          <AdminHeader />
+          <AdminNavBar />
+          <div
+            className="admin-content"
+            style={{ marginLeft: "250px", marginTop: "50px", padding: "20px" }}
+          >
+            {children}
+          </div>
+        </>
+      )}
+      {role !== "admin" && children}
+    </>
+  );
 };
 
 function App() {
@@ -36,6 +59,42 @@ function App() {
             element={
               <PrivateRoute role="admin">
                 <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/appointments"
+            element={
+              <PrivateRoute role="admin">
+                <AdminAppointments />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/specializations"
+            element={
+              <PrivateRoute role="admin">
+                <AdminSpecializations />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/doctors-list"
+            element={
+              <PrivateRoute role="admin">
+                <AdminDoctorList />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/patients-list"
+            element={
+              <PrivateRoute role="admin">
+                <AdminPatientList />
               </PrivateRoute>
             }
           />
