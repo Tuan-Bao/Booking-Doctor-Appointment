@@ -13,33 +13,83 @@ const Dashboard = () => {
     totalPatients: 0,
     todayPatients: 0,
     todayAppointments: 0,
+    today_appointments: [],
     appointments: [],
     nextPatient: null,
+    averageRating: 0,
+    totalReviews: 0,
+    ratings: [],
   });
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date());
 
   // Patient statistics data for pie chart
-  const patientData = [
-    { name: "New Patients", value: 35, color: "#8884d8" },
-    { name: "Old Patients", value: 65, color: "#FFBB28" },
-  ];
+  const [patientData, setPatientData] = useState([
+    { name: "New Patients", value: 0, color: "#3A59D1" },
+    { name: "Old Patients", value: 0, color: "#7AC6D2" },
+  ]);
 
-  // Patient reviews data
-  const reviewData = [
-    { label: "Excellent", percentage: 60, color: "#3366CC" },
-    { label: "Great", percentage: 20, color: "#22AA44" },
-    { label: "Good", percentage: 15, color: "#FF9900" },
-    { label: "Average", percentage: 5, color: "#00CCCC" },
-  ];
+  function isSameDay(dateA, dateB) {
+    return (
+      dateA.getDate() === dateB.getDate() &&
+      dateA.getMonth() === dateB.getMonth() &&
+      dateA.getFullYear() === dateB.getFullYear()
+    );
+  }
 
   // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Assume we have an endpoint to get doctor profile with today's appointments
         const token = localStorage.getItem("token");
+
+        // Fetch doctor profile and appointments
+        const [profileResponse, feedbackResponse] = await Promise.all([
+          axios.get(`${API_URL}/doctor/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_URL}/doctor/feedback`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        const { user } = profileResponse.data;
+        const { appointments: feedbackAppointments } = feedbackResponse.data;
+
+        // Process feedback data
+        const feedbacksWithComments = feedbackAppointments.filter(
+          (appt) => appt.feedback
+        );
+        const ratingCounts = {
+          5: 0,
+          4: 0,
+          3: 0,
+          2: 0,
+          1: 0,
+        };
+
+        feedbacksWithComments.forEach((appt) => {
+          if (appt.feedback) {
+            ratingCounts[appt.feedback.rating]++;
+          }
+        });
+
+        setDashboardData((prev) => ({
+          ...prev,
+          averageRating: user.doctor.rating,
+          totalReviews: feedbacksWithComments.length,
+          ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
+            rating: parseInt(rating),
+            count,
+            percentage:
+              feedbacksWithComments.length > 0
+                ? Math.round((count / feedbacksWithComments.length) * 100)
+                : 0,
+          })),
+        }));
+
+        // Assume we have an endpoint to get doctor profile with today's appointments
         const response = await axios.get(`${API_URL}/doctor/appointments`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -54,10 +104,28 @@ const Dashboard = () => {
 
         // Filter today's appointments
         const today = new Date();
-        const todayDateString = format(today, "dd/M/yyyy");
-        const todayAppointmentsList = appointments.filter((appt) =>
-          appt.appointment_datetime.includes(todayDateString)
-        );
+        const todayAppointmentsList = appointments
+          .filter((appt) => {
+            const parsedDate = parse(
+              appt.appointment_datetime,
+              "HH:mm:ss d/M/yyyy",
+              new Date()
+            );
+            return isSameDay(parsedDate, today);
+          })
+          .sort((a, b) => {
+            const dateA = parse(
+              a.appointment_datetime,
+              "HH:mm:ss d/M/yyyy",
+              new Date()
+            );
+            const dateB = parse(
+              b.appointment_datetime,
+              "HH:mm:ss d/M/yyyy",
+              new Date()
+            );
+            return dateA - dateB; // ASC (tăng dần)
+          });
 
         // Find next patient
         const nextPatient = todayAppointmentsList.find((appt) => {
@@ -69,14 +137,53 @@ const Dashboard = () => {
           return appt.status === "accepted" && apptDate > new Date();
         });
 
-        console.log(nextPatient);
+        const todayPatients = new Set(
+          todayAppointmentsList.map((appt) => appt.patient?.patient_id)
+        ).size;
+
+        // Đếm số lần mỗi patient_id xuất hiện
+        const patientVisitCount = {};
+
+        appointments.forEach((appt) => {
+          const patientId = appt.patient?.patient_id;
+          if (patientId) {
+            patientVisitCount[patientId] =
+              (patientVisitCount[patientId] || 0) + 1;
+          }
+        });
+
+        // Đếm số bệnh nhân mới và cũ
+        let newPatients = 0;
+        let oldPatients = 0;
+
+        Object.values(patientVisitCount).forEach((count) => {
+          if (count === 1) newPatients++;
+          else oldPatients++;
+        });
+
+        // Cập nhật patientData cho PieChart
+        setPatientData([
+          { name: "New Patients", value: newPatients, color: "#3D90D7" },
+          { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
+        ]);
 
         setDashboardData({
           totalPatients: totalPatients,
-          todayPatients: todayAppointmentsList.length,
+          todayPatients: todayPatients,
           todayAppointments: todayAppointmentsList.length,
-          appointments: todayAppointmentsList,
+          today_appointments: todayAppointmentsList,
+          appointments: appointments,
           nextPatient: nextPatient || null,
+          averageRating: user.doctor.rating,
+          totalReviews: feedbacksWithComments.length,
+          ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
+            rating: parseInt(rating),
+            count,
+            percentage:
+              feedbacksWithComments.length > 0
+                ? Math.round((count / feedbacksWithComments.length) * 100)
+                : 0,
+          })),
         });
 
         setLoading(false);
@@ -102,12 +209,24 @@ const Dashboard = () => {
   // Handle calendar tile content
   const tileContent = ({ date }) => {
     // Check if date has appointments
-    const dateString = format(date, "yyyy-MM-dd");
+    const dateString = format(date, "dd/M/yyyy");
     const hasAppointments = dashboardData.appointments.some((appt) =>
       appt.appointment_datetime.includes(dateString)
     );
 
     return hasAppointments ? <div className="appointment-dot"></div> : null;
+  };
+
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      waiting_for_confirmation: "Waiting",
+      accepted: "Accepted",
+      cancelled: "Cancelled",
+      completed: "Completed",
+      patient_not_coming: "Not Coming",
+    };
+
+    return statusMap[status] || "Unknown";
   };
 
   if (loading) {
@@ -218,14 +337,14 @@ const Dashboard = () => {
           <div className="appointment-list">
             <div className="appointment-header">
               <span>Patient</span>
-              <span>Name/Diagnosis</span>
+              <span>Name</span>
               <span>Time</span>
+              <span>Status</span>
             </div>
 
-            {dashboardData.appointments.length > 0 ? (
-              dashboardData.appointments
-                .slice(0, 4)
-                .map((appointment, index) => (
+            <div className="appointment-scroll-container">
+              {dashboardData.today_appointments.length > 0 ? (
+                dashboardData.today_appointments.map((appointment, index) => (
                   <div key={index} className="appointment-item">
                     <div className="patient-avatar">
                       <img
@@ -240,31 +359,25 @@ const Dashboard = () => {
                       <div className="patient-name">
                         {appointment.patient?.user?.username || "Unknown"}
                       </div>
-                      <div className="diagnosis">
-                        {appointment.medical_record?.diagnosis ||
-                          "Health Checkup"}
-                      </div>
                     </div>
                     <div className="appointment-time">
-                      <span
-                        className={
-                          appointment.status === "ongoing" ? "ongoing" : ""
-                        }
-                      >
-                        {formatTime(appointment.appointment_datetime)}
+                      {formatTime(appointment.appointment_datetime)}
+                    </div>
+                    <div className="appointment-status">
+                      <span className={`status ${appointment.status}`}>
+                        {getStatusLabel(appointment.status)}
                       </span>
                     </div>
                   </div>
                 ))
-            ) : (
-              <div className="no-appointments">No appointments for today</div>
-            )}
+              ) : (
+                <div className="no-appointments">No appointments for today</div>
+              )}
+            </div>
 
-            {dashboardData.appointments.length > 4 && (
-              <div className="see-all">
-                <a href="/doctor/appointments">See All</a>
-              </div>
-            )}
+            <div className="see-all">
+              <a href="/doctor/appointments">See All Appointments</a>
+            </div>
           </div>
         </div>
 
@@ -273,95 +386,112 @@ const Dashboard = () => {
           <h3>Next Patient Details</h3>
           {dashboardData.nextPatient ? (
             <div className="patient-card">
-              <div className="patient-profile">
-                <img
-                  src={
-                    dashboardData.nextPatient?.patient?.user?.avatar ||
-                    "https://via.placeholder.com/60"
-                  }
-                  alt="Patient"
-                />
-                <h4>
-                  {dashboardData.nextPatient?.patient?.user?.username ||
-                    "Unknown"}
-                </h4>
-                <p>
-                  {dashboardData.nextPatient.medical_record?.diagnosis ||
-                    "Health Checkup"}
-                </p>
+              <div className="patient-header">
+                <div className="patient-avatar-name">
+                  <img
+                    src={
+                      dashboardData.nextPatient?.patient?.user?.avatar ||
+                      "https://via.placeholder.com/60"
+                    }
+                    alt="Patient"
+                    className="patient-avatar-img"
+                  />
+                  <div className="patient-name-info">
+                    <h4 className="patient-name">
+                      {dashboardData.nextPatient?.patient?.user?.username ||
+                        "Unknown"}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="patient-id-container">
+                  <span className="patient-id-label">Patient ID</span>
+                  <span className="patient-id-value">
+                    {dashboardData.nextPatient.patient?.patient_id || "Unknown"}
+                  </span>
+                </div>
               </div>
 
-              <div className="patient-details">
-                <div className="detail-row">
-                  <div className="detail-label">Patient ID</div>
-                  <div className="detail-value">
-                    {dashboardData.nextPatient.patient?.patient_id}
-                  </div>
-                </div>
-                <div className="detail-row">
-                  <div className="detail-label">Sex</div>
-                  <div className="detail-value">
-                    {dashboardData.nextPatient.patient?.gender || "N/A"}
-                  </div>
-                </div>
-                <div className="detail-row">
-                  <div className="detail-label">Weight</div>
-                  <div className="detail-value">N/A</div>
-                </div>
-                <div className="detail-row">
-                  <div className="detail-label">Last Appointment</div>
-                  <div className="detail-value">N/A</div>
+              <div className="patient-details-grid">
+                <div className="detail-item">
+                  <span className="detail-label">D.O.B</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.date_of_birth
+                      ? format(
+                          new Date(
+                            dashboardData.nextPatient.patient.date_of_birth
+                          ),
+                          "dd MMMM yyyy"
+                        )
+                      : "Unknown"}
+                  </span>
                 </div>
 
-                <div className="patient-history">
-                  <h5>Patient History</h5>
-                  <div className="history-tags">
-                    <span className="history-tag">Allergies</span>
-                    <span className="history-tag">Hypertension</span>
-                    <span className="history-tag">Fever</span>
-                  </div>
+                <div className="detail-item">
+                  <span className="detail-label">Sex</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.gender || "Unknown"}
+                  </span>
                 </div>
 
-                <div className="action-buttons">
-                  <button className="btn-call">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
-                    </svg>
-                    Call
-                  </button>
-                  <button className="btn-document">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" />
-                      <path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z" />
-                    </svg>
-                    Document
-                  </button>
-                  <button className="btn-chat">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
-                      <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9.06 9.06 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.437 10.437 0 0 1-.524 2.318l-.003.011a10.722 10.722 0 0 1-.244.637c-.079.186.074.394.273.362a21.673 21.673 0 0 0 .693-.125zm.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6c0 3.193-3.004 6-7 6a8.06 8.06 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a10.97 10.97 0 0 0 .398-2z" />
-                    </svg>
-                    Chat
-                  </button>
+                <div className="detail-item">
+                  <span className="detail-label">Email</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.user?.email ||
+                      "Unknown"}
+                  </span>
                 </div>
+
+                <div className="detail-item">
+                  <span className="detail-label">Phone</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.phone_number ||
+                      "Unknown"}
+                  </span>
+                </div>
+
+                <div className="detail-item">
+                  <span className="detail-label">Address</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.address || "Unknown"}
+                  </span>
+                </div>
+
+                <div className="detail-item">
+                  <span className="detail-label">Insurance</span>
+                  <span className="detail-value">
+                    {dashboardData.nextPatient.patient?.insurance_number ||
+                      "Unknown"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="action-buttons">
+                <button className="btn-call">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
+                  </svg>
+                  Call
+                </button>
+                <button className="btn-document">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" />
+                    <path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z" />
+                  </svg>
+                  Document
+                </button>
               </div>
             </div>
           ) : (
@@ -375,19 +505,46 @@ const Dashboard = () => {
         {/* Left: Patient Reviews */}
         <div className="patient-reviews">
           <h3>Patients Review</h3>
-          <div className="review-bars">
-            {reviewData.map((review, index) => (
-              <div key={index} className="review-item">
-                <span className="review-label">{review.label}</span>
-                <div className="review-bar-container">
+          <div className="rating-summary">
+            <div className="average-rating">
+              <span className="rating-number">
+                {dashboardData.averageRating.toFixed(1)}
+              </span>
+              <div className="rating-stars">
+                {[...Array(5)].map((_, index) => (
+                  <span
+                    key={index}
+                    className={`star ${
+                      index < Math.floor(dashboardData.averageRating)
+                        ? "filled"
+                        : ""
+                    } ${
+                      index === Math.floor(dashboardData.averageRating) &&
+                      dashboardData.averageRating % 1 >= 0.5
+                        ? "half-filled"
+                        : ""
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              <span className="total-reviews">
+                {dashboardData.totalReviews} reviews
+              </span>
+            </div>
+          </div>
+          <div className="rating-distribution">
+            {dashboardData.ratings.map(({ rating, count, percentage }) => (
+              <div key={rating} className="rating-bar">
+                <span className="rating-label">{rating} stars</span>
+                <div className="bar-container">
                   <div
-                    className="review-bar"
-                    style={{
-                      width: `${review.percentage}%`,
-                      backgroundColor: review.color,
-                    }}
+                    className="bar-fill"
+                    style={{ width: `${percentage}%` }}
                   ></div>
                 </div>
+                <span className="rating-count">{count}</span>
               </div>
             ))}
           </div>
