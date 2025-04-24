@@ -524,4 +524,11 @@ doctorRouter.get(
   doctorController.getDoctorFeedback
 );
 
+doctorRouter.get(
+  "/appointments/stats",
+  authentication,
+  authorized(["doctor"]),
+  doctorController.getDoctorAppointmentStats
+);
+
 export default doctorRouter;

@@ -38,7 +38,13 @@ export const getDoctorProfile = async (req, res, next) => {
 export const getDoctorAppointments = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const result = await doctorService.getDoctorAppointments(user_id);
+    const { page = 1, limit = 10, status } = req.query;
+    const result = await doctorService.getDoctorAppointments(
+      user_id,
+      parseInt(page),
+      parseInt(limit),
+      status
+    );
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);
@@ -139,6 +145,16 @@ export const getDoctorFeedback = async (req, res, next) => {
   try {
     const { user_id } = req.user;
     const result = await doctorService.getDoctorFeedback(user_id);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDoctorAppointmentStats = async (req, res, next) => {
+  try {
+    const { user_id } = req.user;
+    const result = await doctorService.getDoctorAppointmentStats(user_id);
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);

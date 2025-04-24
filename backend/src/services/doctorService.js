@@ -3,6 +3,7 @@ import BadRequestError from "../errors/bad_request.js";
 import NotFoundError from "../errors/not_found.js";
 import cloudinary from "../config/cloudinary.js";
 import { formatToVNTime } from "../helper/formatToVNTime.js";
+import { isSameDay } from "../helper/isSameDay.js";
 
 const db = await initDB();
 const Doctor = db.Doctor;
@@ -122,7 +123,12 @@ export const getDoctorProfile = async (user_id) => {
   }
 };
 
-export const getDoctorAppointments = async (user_id) => {
+export const getDoctorAppointments = async (
+  user_id,
+  page = 1,
+  limit = 10,
+  status = null
+) => {
   try {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
@@ -140,8 +146,15 @@ export const getDoctorAppointments = async (user_id) => {
 
     const doctor_id = doctor.doctor_id;
 
-    const appointments = await Appointment.findAll({
-      where: { doctor_id },
+    const offset = (page - 1) * limit;
+
+    const whereClause = { doctor_id };
+    if (status) {
+      whereClause.status = status;
+    }
+
+    const { count, rows: appointments } = await Appointment.findAndCountAll({
+      where: whereClause,
       include: [
         {
           model: Patient,
@@ -150,16 +163,10 @@ export const getDoctorAppointments = async (user_id) => {
             { model: User, as: "user", attributes: { exclude: ["password"] } },
           ],
         },
-        // {
-        //   model: Doctor,
-        //   as: "doctor",
-        //   include: [
-        //     { model: User, as: "user", attributes: { exclude: ["password"] } },
-        //     { model: Specialization, as: "specialization" },
-        //   ],
-        // },
       ],
       order: [["appointment_datetime", "DESC"]],
+      limit,
+      offset,
     });
 
     const formattedAppointments = appointments.map((a) => ({
@@ -171,6 +178,12 @@ export const getDoctorAppointments = async (user_id) => {
       message: "Success",
       user,
       appointments: formattedAppointments,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
     };
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -428,6 +441,53 @@ export const getDoctorFeedback = async (user_id) => {
     return {
       message: "Success",
       appointments,
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const getDoctorAppointmentStats = async (user_id) => {
+  try {
+    const user = await User.findByPk(user_id, {
+      attributes: { exclude: ["password"] },
+      include: [{ model: Doctor, as: "doctor" }],
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const { doctor } = user;
+    if (!doctor) {
+      throw new NotFoundError("Doctor not found");
+    }
+
+    const doctor_id = doctor.doctor_id;
+
+    const appointments = await Appointment.findAll({
+      where: { doctor_id },
+    });
+
+    const today = new Date();
+    const todayAppointments = appointments.filter((appt) => {
+      const apptDate = new Date(appt.appointment_datetime);
+      return isSameDay(apptDate, today);
+    });
+
+    return {
+      total: todayAppointments.length,
+      waiting: appointments.filter(
+        (a) => a.status === "waiting_for_confirmation"
+      ).length,
+      accepted: appointments.filter((a) => a.status === "accepted").length,
+      cancelled: appointments.filter((a) => a.status === "cancelled").length,
+      completed: appointments.filter((a) => a.status === "completed").length,
+      notComing: appointments.filter((a) => a.status === "patient_not_coming")
+        .length,
     };
   } catch (error) {
     if (error instanceof NotFoundError) {
