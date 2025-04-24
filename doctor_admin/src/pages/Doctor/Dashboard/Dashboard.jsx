@@ -166,7 +166,7 @@ const Dashboard = () => {
           { name: "New Patients", value: newPatients, color: "#3D90D7" },
           { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
         ]);
-
+        console.log("todayAppointmentsList: ", todayAppointmentsList);
         setDashboardData({
           totalPatients: totalPatients,
           todayPatients: todayPatients,
@@ -219,11 +219,11 @@ const Dashboard = () => {
 
   const getStatusLabel = (status) => {
     const statusMap = {
-      waiting_for_confirmation: "Waiting",
+      waiting_for_confirmation: "Pending",
       accepted: "Accepted",
       cancelled: "Cancelled",
       completed: "Completed",
-      patient_not_coming: "Not Coming",
+      patient_not_coming: "No Show",
     };
 
     return statusMap[status] || "Unknown";

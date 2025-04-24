@@ -1,0 +1,140 @@
+.appointments-container {
+  padding: 24px;
+  background-color: #f5f7fb;
+  min-height: 100vh;
+}
+
+.stats-row {
+  margin-bottom: 24px;
+}
+
+.stats-row .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stats-row .ant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stats-row .ant-statistic-title {
+  font-size: 14px;
+  color: #666;
+}
+
+.stats-row .ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.status-tags {
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-tag {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.status-tag:hover {
+  opacity: 0.8;
+}
+
+.appointments-table {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.patient-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: #333;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: #f5f7fb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .appointments-container {
+    padding: 16px;
+  }
+
+  .stats-row .ant-col {
+    margin-bottom: 16px;
+  }
+
+  .status-tags {
+    justify-content: center;
+  }
+}
+
+.action-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.action-dropdown .anticon {
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.action-dropdown .anticon:hover {
+  background-color: #e6f7ff;
+}
+
+.action-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  max-height: 100px;
+  z-index: 1000;
+  display: none;
+}
+
+.action-dropdown:hover .action-menu {
+  display: block;
+}
+
+.action-menu-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  font-size: 12px;
+}
+
+.action-menu-item:hover {
+  background-color: #ecf1fc;
+}
+
+.action-menu-item .anticon {
+  font-size: 16px;
+  color: #666;
+}
