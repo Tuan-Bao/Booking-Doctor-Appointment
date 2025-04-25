@@ -41,7 +41,7 @@ const PrivateRoute = ({ children, role }) => {
           <AdminNavBar />
           <div
             className="admin-content"
-            style={{ marginLeft: "250px", marginTop: "50px", padding: "20px" }}
+            style={{ marginLeft: "210px", marginTop: "70px", padding: "20px" }}
           >
             {children}
           </div>
@@ -53,7 +53,7 @@ const PrivateRoute = ({ children, role }) => {
           <DoctorNavBar />
           <div
             className="doctor-content"
-            style={{ marginLeft: "250px", marginTop: "50px", padding: "20px" }}
+            style={{ marginLeft: "210px", marginTop: "70px", padding: "20px" }}
           >
             {children}
           </div>
