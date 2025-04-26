@@ -401,4 +401,18 @@ appointmentRouter.get(
   appointmentController.getAppointmentsDetails
 );
 
+appointmentRouter.get(
+  "/",
+  authentication,
+  authorized(["admin"]),
+  appointmentController.getAppointments
+);
+
+appointmentRouter.get(
+  "/stats",
+  authentication,
+  authorized(["admin"]),
+  appointmentController.getAppointmentsStats
+);
+
 export default appointmentRouter;

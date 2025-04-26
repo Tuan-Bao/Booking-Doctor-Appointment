@@ -108,3 +108,26 @@ export const getAppointmentsDetails = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAppointments = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, status } = req.query;
+    const result = await appointmentService.getAppointments(
+      parseInt(page),
+      parseInt(limit),
+      status
+    );
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAppointmentsStats = async (req, res, next) => {
+  try {
+    const result = await appointmentService.getAppointmentsStats();
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

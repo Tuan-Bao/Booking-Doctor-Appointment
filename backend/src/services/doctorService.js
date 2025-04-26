@@ -479,6 +479,7 @@ export const getDoctorAppointmentStats = async (user_id) => {
     });
 
     return {
+      message: "Success",
       total: todayAppointments.length,
       waiting: appointments.filter(
         (a) => a.status === "waiting_for_confirmation"

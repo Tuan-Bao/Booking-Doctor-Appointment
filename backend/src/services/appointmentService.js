@@ -2,6 +2,7 @@ import initDB from "../models/index.js";
 import BadRequestError from "../errors/bad_request.js";
 import NotFoundError from "../errors/not_found.js";
 import { formatToVNTime } from "../helper/formatToVNTime.js";
+import { isSameDay } from "../helper/isSameDay.js";
 import { Op } from "sequelize";
 
 const db = await initDB();
@@ -525,6 +526,96 @@ export const getAppointmentsDetails = async (appointment_id) => {
     );
 
     return { message: "Success", appointmentDetails: result };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const getAppointments = async (page = 1, limit = 10, status = null) => {
+  try {
+    const offset = (page - 1) * limit;
+    const whereClause = {};
+    if (status) {
+      whereClause.status = status;
+    }
+    const { count, rows: appointments } = await Appointment.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: Patient,
+          as: "patient",
+          include: [
+            { model: User, as: "user", attributes: { exclude: ["password"] } },
+          ],
+        },
+        {
+          model: Doctor,
+          as: "doctor",
+          include: [
+            { model: User, as: "user", attributes: { exclude: ["password"] } },
+            { model: Specialization, as: "specialization" },
+          ],
+        },
+      ],
+      order: [["appointment_datetime", "DESC"]],
+      limit,
+      offset,
+    });
+    if (appointments.length === 0) {
+      throw new NotFoundError("No appointments found");
+    }
+
+    const formattedAppointments = appointments.map((a) => ({
+      ...a.toJSON(),
+      appointment_datetime: formatToVNTime(a.appointment_datetime),
+    }));
+    return {
+      message: "Success",
+      appointments: formattedAppointments,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const getAppointmentsStats = async () => {
+  try {
+    const appointments = await Appointment.findAll();
+
+    if (appointments.length === 0) {
+      throw new NotFoundError("No appointments found");
+    }
+
+    const today = new Date();
+    const todayAppointments = appointments.filter((appt) => {
+      const apptDate = new Date(appt.appointment_datetime);
+      return isSameDay(apptDate, today);
+    });
+
+    return {
+      message: "Success",
+      total: todayAppointments.length,
+      waiting: appointments.filter(
+        (a) => a.status === "waiting_for_confirmation"
+      ).length,
+      accepted: appointments.filter((a) => a.status === "accepted").length,
+      cancelled: appointments.filter((a) => a.status === "cancelled").length,
+      completed: appointments.filter((a) => a.status === "completed").length,
+      notComing: appointments.filter((a) => a.status === "patient_not_coming")
+        .length,
+    };
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
