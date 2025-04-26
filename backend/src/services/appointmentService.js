@@ -408,7 +408,7 @@ export const getAllAppointments = async () => {
           ],
         },
       ],
-      order: [["appointment_datetime", "DESC"]],
+      order: [["appointment_datetime", "ASC"]],
     });
     if (appointments.length === 0) {
       throw new NotFoundError("No appointments found");

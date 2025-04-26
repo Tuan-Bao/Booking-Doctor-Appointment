@@ -1,0 +1,111 @@
+.dashboard-container {
+  padding: 20px;
+  background-color: #f5f7fb;
+  min-height: 100vh;
+}
+
+.admin-title {
+  margin-top: 10px;
+}
+
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.dashboard-loading p {
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.dashboard-alert {
+  margin-bottom: 24px;
+}
+
+.dashboard-stats {
+  margin-top: 24px;
+}
+
+.dashboard-stats .ant-card {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.dashboard-stats .ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.dashboard-charts {
+  margin-top: 24px;
+}
+
+.dashboard-charts .ant-card {
+  height: 100%;
+}
+
+.dashboard-charts .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+}
+
+.dashboard-charts .ant-card-head-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.dashboard-charts .ant-card-body {
+  padding: 24px;
+  height: 400px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+
+  .dashboard-stats .ant-card,
+  .dashboard-charts .ant-card {
+    margin-bottom: 16px;
+  }
+
+  .dashboard-charts .ant-card-body {
+    height: 300px;
+  }
+}
+
+/* Chart specific styles */
+.dashboard-charts .pie-chart {
+  height: 100%;
+}
+
+.dashboard-charts .column-chart,
+.dashboard-charts .line-chart {
+  height: 100%;
+}
+
+/* Status colors */
+.status-completed {
+  color: #52c41a;
+}
+
+.status-cancelled {
+  color: #ff4d4f;
+}
+
+.status-waiting {
+  color: #faad14;
+}
+
+.status-accepted {
+  color: #1890ff;
+}
+
+.dashboard-charts .ant-card {
+  /* đặt chiều cao tối thiểu cho cả Card */
+  min-height: 480px;
+}
