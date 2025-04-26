@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import { AppProvider } from "./context/AppContext";
 import Login from "./pages/Login/Login";
 import AdminHeader from "./components/Admin/Header/Header";
@@ -66,6 +67,14 @@ const PrivateRoute = ({ children, role }) => {
 function App() {
   return (
     <AppProvider>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+      />
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />

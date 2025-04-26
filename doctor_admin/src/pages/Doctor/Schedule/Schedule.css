@@ -1,0 +1,80 @@
+.schedule-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.schedule-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-alert {
+  margin-bottom: 24px;
+}
+
+.schedule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.calendar-section {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.schedule-slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-slots li {
+  margin: 4px 0;
+}
+
+.time-picker-section {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.time-picker-container {
+  width: 100%;
+}
+
+.time-picker {
+  width: 150px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .schedule-container {
+    padding: 16px;
+  }
+
+  .schedule-content {
+    flex-direction: column;
+  }
+
+  .time-picker-container {
+    margin-top: 16px;
+  }
+}
+
+/* Override ant-design calendar styles */
+.ant-picker-calendar-full .ant-picker-panel {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.ant-tag {
+  margin: 2px;
+}
+
+.ant-calendar-date-panel {
+  border-radius: 8px;
+}
