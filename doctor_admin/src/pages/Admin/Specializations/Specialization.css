@@ -1,0 +1,70 @@
+.specializations-container {
+  padding: 20px;
+  background-color: #f5f7fb;
+  min-height: 100vh;
+}
+
+.specializations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.add-button {
+  margin-left: auto;
+}
+
+.specialization-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Form styles */
+.ant-form-item {
+  margin-bottom: 24px;
+}
+
+.form-actions {
+  margin-top: 24px;
+  text-align: right;
+}
+
+/* Table styles */
+.ant-table-wrapper {
+  background: white;
+  border-radius: 8px;
+}
+
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .specializations-container {
+    padding: 16px;
+  }
+
+  .specializations-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .add-button {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .ant-table {
+    font-size: 14px;
+  }
+
+  .specialization-image {
+    width: 60px;
+    height: 60px;
+  }
+}

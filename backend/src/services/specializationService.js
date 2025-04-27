@@ -156,3 +156,31 @@ export const deleteSpecialization = async (specialization_id) => {
     throw new Error(error.message);
   }
 };
+
+export const getSpecializations = async (page = 1, limit = 10) => {
+  try {
+    const offset = (page - 1) * limit;
+    const { count, rows: specializations } =
+      await Specialization.findAndCountAll({
+        limit,
+        offset,
+      });
+
+    if (specializations.length === 0) {
+      throw new NotFoundError("No specializations found");
+    }
+
+    return {
+      message: "Success",
+      specializations,
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};

@@ -86,3 +86,16 @@ export const deleteSpecialization = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getSpecializations = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const result = await specializationService.getSpecializations(
+      parseInt(page),
+      parseInt(limit)
+    );
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -251,4 +251,11 @@ specializationRouter.delete(
   specializationController.deleteSpecialization
 );
 
+specializationRouter.get(
+  "/",
+  authentication,
+  authorized(["admin"]),
+  specializationController.getSpecializations
+);
+
 export default specializationRouter;
