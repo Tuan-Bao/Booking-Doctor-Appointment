@@ -18,7 +18,8 @@ export const loginDoctor = async (req, res, next) => {
 
 export const getAllDoctors = async (req, res, next) => {
   try {
-    const result = await doctorService.getAllDoctors();
+    const { specialization_id } = req.query;
+    const result = await doctorService.getAllDoctors({ specialization_id });
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);

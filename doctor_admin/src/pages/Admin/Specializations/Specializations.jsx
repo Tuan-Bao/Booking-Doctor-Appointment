@@ -11,12 +11,16 @@ import {
   Card,
   Typography,
   Space,
+  Row,
+  Col,
+  Statistic,
 } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   UploadOutlined,
+  ExperimentOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../../context/AppContext";
@@ -30,6 +34,7 @@ const Specializations = () => {
   const [form] = Form.useForm();
   const [specializations, setSpecializations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAdd, setLoadingAdd] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [fileList, setFileList] = useState([]);
@@ -102,6 +107,7 @@ const Specializations = () => {
   };
 
   const handleDelete = async (id) => {
+    setLoadingAdd(true);
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_URL}/specialization/delete/${id}`, {
@@ -112,10 +118,13 @@ const Specializations = () => {
     } catch (error) {
       toast.error("Failed to delete specialization");
       console.error(error);
+    } finally {
+      setLoadingAdd(false);
     }
   };
 
   const handleSubmit = async (values) => {
+    setLoadingAdd(true);
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -171,6 +180,8 @@ const Specializations = () => {
         error.response?.data?.message || "Failed to save specialization"
       );
       console.error(error);
+    } finally {
+      setLoadingAdd(false);
     }
   };
 
@@ -226,7 +237,12 @@ const Specializations = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" danger icon={<DeleteOutlined />}>
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              loading={loadingAdd}
+            >
               Delete
             </Button>
           </Popconfirm>
@@ -258,9 +274,27 @@ const Specializations = () => {
 
   return (
     <div className="specializations-container">
+      <Title className="admin-title" level={2}>
+        Specialization Management
+      </Title>
+      <Row gutter={[24, 24]} className="stats-row">
+        <Col xs={24} sm={12} md={6}>
+          <Card className="stat-card">
+            <Statistic
+              title="Specializations"
+              value={specializations.length}
+              prefix={
+                <ExperimentOutlined
+                  className="stat-icon"
+                  style={{ background: "#fff7e6", color: "#fa8c16" }}
+                />
+              }
+            />
+          </Card>
+        </Col>
+      </Row>
       <Card>
         <div className="specializations-header">
-          <Title level={2}>Specialization Management</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -333,7 +367,7 @@ const Specializations = () => {
             <Form.Item className="form-actions">
               <Space>
                 <Button onClick={() => setModalVisible(false)}>Cancel</Button>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loadingAdd}>
                   {editingId ? "Update" : "Create"}
                 </Button>
               </Space>

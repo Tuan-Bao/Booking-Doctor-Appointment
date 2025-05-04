@@ -53,9 +53,14 @@ export const loginDoctor = async (email, password) => {
   }
 };
 
-export const getAllDoctors = async () => {
+export const getAllDoctors = async ({ specialization_id }) => {
   try {
+    const where = {};
+    if (specialization_id) {
+      where.specialization_id = specialization_id;
+    }
     const doctors = await Doctor.findAll({
+      where,
       include: [
         {
           model: User,

@@ -4,6 +4,10 @@
   min-height: 100vh;
 }
 
+.admin-title {
+  margin-top: 10px;
+}
+
 .stats-row {
   margin-bottom: 24px;
 }
@@ -59,6 +63,15 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 8px;
+}
+
+.doctor-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 1px solid #4f46e5 !important;
 }
 
 .ant-table-thead > tr > th {

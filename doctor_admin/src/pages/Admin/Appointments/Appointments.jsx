@@ -97,6 +97,31 @@ const Appointments = () => {
       },
     },
     {
+      title: "Doctor",
+      dataIndex: ["doctor", "user", "username"],
+      key: "doctor",
+      render: (text, record) => (
+        <Space>
+          <img
+            src={
+              record.doctor?.user?.avatar || "https://via.placeholder.com/40"
+            }
+            alt="Patient"
+            className="doctor-avatar"
+          />
+          <span>{text || "Unknown"}</span>
+        </Space>
+      ),
+    },
+    {
+      title: "Specialization",
+      dataIndex: ["doctor", "specialization", "name"],
+      key: "specialization",
+      render: (text, record) => (
+        <span>{record.doctor?.specialization?.name || "N/A"}</span>
+      ),
+    },
+    {
       title: "Fee",
       dataIndex: "fees",
       key: "fees",
@@ -188,7 +213,9 @@ const Appointments = () => {
 
   return (
     <div className="appointments-container">
-      <Title level={2}>Appointment Management</Title>
+      <Title className="admin-title" level={2}>
+        Appointment Management
+      </Title>
 
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} className="stats-row">

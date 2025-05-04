@@ -38,9 +38,9 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    console.log(chartData);
-  }, [chartData]);
+  // useEffect(() => {
+  //   console.log("appointment trend: ", chartData.appointmentTrend);
+  // }, [chartData]);
 
   const processChartData = (appointments, specializations) => {
     // Process status distribution for pie chart
@@ -164,9 +164,14 @@ const Dashboard = () => {
     data: chartData.appointmentTrend,
     xField: "date",
     yField: "appointments",
+    smooth: true,
+    lineStyle: {
+      lineWidth: 3,
+      stroke: "#1890ff",
+    },
     point: {
       size: 5,
-      shape: "diamond",
+      shape: "circle",
     },
     label: {
       style: {

@@ -4,6 +4,10 @@
   min-height: 100vh;
 }
 
+.admin-title {
+  margin-top: 10px;
+}
+
 .specializations-header {
   display: flex;
   justify-content: space-between;
