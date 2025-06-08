@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Calendar } from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useAppContext } from "../../../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { API_URL } = useAppContext();
@@ -21,13 +22,22 @@ const Dashboard = () => {
     ratings: [],
   });
   const [loading, setLoading] = useState(true);
-  const [date, setDate] = useState(new Date());
+  const navigate = useNavigate();
+  // const [date, setDate] = useState(new Date());
 
   // Patient statistics data for pie chart
-  const [patientData, setPatientData] = useState([
-    { name: "New Patients", value: 0, color: "#3A59D1" },
-    { name: "Old Patients", value: 0, color: "#7AC6D2" },
-  ]);
+  // const [patientData, setPatientData] = useState([
+  //   { name: "New Patients", value: 0, color: "#3A59D1" },
+  //   { name: "Old Patients", value: 0, color: "#7AC6D2" },
+  // ]);
+
+  const handlePatientDetails = (user_id) => {
+    if (user_id) {
+      navigate(`/doctor/patient/${user_id}`);
+    } else {
+      console.log("Patient information not found");
+    }
+  };
 
   function isSameDay(dateA, dateB) {
     return (
@@ -94,7 +104,7 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log(response.data);
+        // console.log(response.data);
         // Extract relevant data (this will depend on your actual API response)
         const { appointments } = response.data;
         const uniquePatientIds = new Set(
@@ -107,20 +117,23 @@ const Dashboard = () => {
         const todayAppointmentsList = appointments
           .filter((appt) => {
             const parsedDate = parse(
-              appt.appointment_datetime,
+              appt.checkin_time,
               "HH:mm:ss d/M/yyyy",
               new Date()
             );
-            return isSameDay(parsedDate, today);
+            return (
+              isSameDay(parsedDate, today) && appt.status === "scheduled"
+              // && parsedDate >= new Date()
+            );
           })
           .sort((a, b) => {
             const dateA = parse(
-              a.appointment_datetime,
+              a.checkin_time,
               "HH:mm:ss d/M/yyyy",
               new Date()
             );
             const dateB = parse(
-              b.appointment_datetime,
+              b.checkin_time,
               "HH:mm:ss d/M/yyyy",
               new Date()
             );
@@ -129,12 +142,13 @@ const Dashboard = () => {
 
         // Find next patient
         const nextPatient = todayAppointmentsList.find((appt) => {
-          const apptDate = parse(
-            appt.appointment_datetime,
-            "HH:mm:ss d/M/yyyy",
-            new Date()
-          );
-          return appt.status === "accepted" && apptDate > new Date();
+          // const apptDate = parse(
+          //   appt.checkin_time,
+          //   "HH:mm:ss d/M/yyyy",
+          //   new Date()
+          // );
+          return appt.status === "scheduled";
+          // && apptDate > new Date()
         });
 
         const todayPatients = new Set(
@@ -153,20 +167,20 @@ const Dashboard = () => {
         });
 
         // Đếm số bệnh nhân mới và cũ
-        let newPatients = 0;
-        let oldPatients = 0;
+        // let newPatients = 0;
+        // let oldPatients = 0;
 
-        Object.values(patientVisitCount).forEach((count) => {
-          if (count === 1) newPatients++;
-          else oldPatients++;
-        });
+        // Object.values(patientVisitCount).forEach((count) => {
+        //   if (count === 1) newPatients++;
+        //   else oldPatients++;
+        // });
 
         // Cập nhật patientData cho PieChart
-        setPatientData([
-          { name: "New Patients", value: newPatients, color: "#3D90D7" },
-          { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
-        ]);
-        console.log("todayAppointmentsList: ", todayAppointmentsList);
+        // setPatientData([
+        //   { name: "New Patients", value: newPatients, color: "#3D90D7" },
+        //   { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
+        // ]);
+        // console.log("todayAppointmentsList: ", todayAppointmentsList);
         setDashboardData({
           totalPatients: totalPatients,
           todayPatients: todayPatients,
@@ -197,37 +211,36 @@ const Dashboard = () => {
   }, []);
 
   // Format time from datetime string (assuming format like "2023-12-21T09:30:00")
-  const formatTime = (datetimeStr) => {
-    try {
-      const time = datetimeStr.split("T")[1].substring(0, 5);
-      return time.replace(":", " : ");
-    } catch {
-      return datetimeStr;
-    }
-  };
+  // const formatTime = (datetimeStr) => {
+  //   try {
+  //     const time = datetimeStr.split("T")[1].substring(0, 5);
+  //     return time.replace(":", " : ");
+  //   } catch {
+  //     return datetimeStr;
+  //   }
+  // };
 
   // Handle calendar tile content
-  const tileContent = ({ date }) => {
-    // Check if date has appointments
-    const dateString = format(date, "dd/M/yyyy");
-    const hasAppointments = dashboardData.appointments.some((appt) =>
-      appt.appointment_datetime.includes(dateString)
-    );
+  // const tileContent = ({ date }) => {
+  //   // Check if date has appointments
+  //   const dateString = format(date, "dd/M/yyyy");
+  //   const hasAppointments = dashboardData.appointments.some((appt) =>
+  //     appt.appointment_datetime.includes(dateString)
+  //   );
 
-    return hasAppointments ? <div className="appointment-dot"></div> : null;
-  };
+  //   return hasAppointments ? <div className="appointment-dot"></div> : null;
+  // };
 
-  const getStatusLabel = (status) => {
-    const statusMap = {
-      waiting_for_confirmation: "Pending",
-      accepted: "Accepted",
-      cancelled: "Cancelled",
-      completed: "Completed",
-      patient_not_coming: "No Show",
-    };
+  // const getStatusLabel = (status) => {
+  //   const statusMap = {
+  //     scheduled: "Scheduled",
+  //     cancelled: "Cancelled",
+  //     completed: "Completed",
+  //     no_show: "No Show",
+  //   };
 
-    return statusMap[status] || "Unknown";
-  };
+  //   return statusMap[status] || "Unknown";
+  // };
 
   if (loading) {
     return <div className="loading">Loading dashboard data...</div>;
@@ -237,7 +250,7 @@ const Dashboard = () => {
     <div className="dashboard">
       {/* Summary Cards */}
       <div className="summary-cards">
-        <div className="card">
+        {/* <div className="card">
           <div className="card-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -254,7 +267,7 @@ const Dashboard = () => {
             <h2>{dashboardData.totalPatients}</h2>
             <p>Till Today</p>
           </div>
-        </div>
+        </div> */}
         <div className="card">
           <div className="card-icon">
             <svg
@@ -297,7 +310,7 @@ const Dashboard = () => {
       {/* Main Dashboard Content */}
       <div className="dashboard-content">
         {/* Left Section - Patient Summary */}
-        <div className="patient-summary">
+        {/* <div className="patient-summary">
           <h3>Patients Summary {format(new Date(), "MMMM yyyy")}</h3>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height={250}>
@@ -329,7 +342,7 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Middle Section - Today's Appointments */}
         <div className="today-appointments">
@@ -338,8 +351,8 @@ const Dashboard = () => {
             <div className="appointment-header">
               <span>Patient</span>
               <span>Name</span>
-              <span>Time</span>
-              <span>Status</span>
+              <span>Date</span>
+              <span>Reason</span>
             </div>
 
             <div className="appointment-scroll-container">
@@ -355,18 +368,16 @@ const Dashboard = () => {
                         alt="Patient"
                       />
                     </div>
-                    <div className="patient-info">
+                    <div className="patient-info-dashboard-doctor">
                       <div className="patient-name">
                         {appointment.patient?.user?.username || "Unknown"}
                       </div>
                     </div>
                     <div className="appointment-time">
-                      {formatTime(appointment.appointment_datetime)}
+                      {appointment.checkin_time}
                     </div>
-                    <div className="appointment-status">
-                      <span className={`status ${appointment.status}`}>
-                        {getStatusLabel(appointment.status)}
-                      </span>
+                    <div className="appointment-reason">
+                      {appointment.reason}
                     </div>
                   </div>
                 ))
@@ -376,14 +387,14 @@ const Dashboard = () => {
             </div>
 
             <div className="see-all">
-              <a href="/doctor/appointments">See All Appointments</a>
+              <a href="/doctor/appointments">See All Today Appointments</a>
             </div>
           </div>
         </div>
 
         {/* Right Section - Next Patient */}
         <div className="next-patient">
-          <h3>Next Patient Details</h3>
+          <h3>Next Patient</h3>
           {dashboardData.nextPatient ? (
             <div className="patient-card">
               <div className="patient-header">
@@ -467,7 +478,7 @@ const Dashboard = () => {
               </div>
 
               <div className="action-buttons">
-                <button className="btn-call">
+                {/* <button className="btn-call">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -478,8 +489,15 @@ const Dashboard = () => {
                     <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
                   </svg>
                   Call
-                </button>
-                <button className="btn-document">
+                </button> */}
+                <button
+                  className="btn-document"
+                  onClick={() =>
+                    handlePatientDetails(
+                      dashboardData.nextPatient.patient.user_id
+                    )
+                  }
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -490,7 +508,7 @@ const Dashboard = () => {
                     <path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" />
                     <path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z" />
                   </svg>
-                  Document
+                  Patient Details
                 </button>
               </div>
             </div>
@@ -501,8 +519,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="bottom-section">
-        {/* Left: Patient Reviews */}
+      {/* <div className="bottom-section">
         <div className="patient-reviews">
           <h3>Patients Review</h3>
           <div className="rating-summary">
@@ -550,7 +567,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right: Calendar */}
         <div className="calendar-section">
           <h3>Calendar</h3>
           <div className="calendar-container">
@@ -561,7 +577,7 @@ const Dashboard = () => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

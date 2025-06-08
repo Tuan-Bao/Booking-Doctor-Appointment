@@ -1,0 +1,136 @@
+.patient-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f5f7fb;
+}
+
+.patient-details-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.patient-details-card .ant-card-body {
+  padding: 24px;
+}
+
+.patient-details-card .ant-typography {
+  margin-bottom: 24px;
+}
+
+.patient-details-card .ant-typography h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.patient-info {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 32px;
+}
+
+.patient-info .ant-descriptions-item-label {
+  font-weight: 600;
+  width: 120px;
+  background-color: #fafafa;
+}
+
+.patient-info .ant-descriptions-item-content {
+  color: #333;
+}
+
+.medical-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 32px 0 16px;
+  color: #1890ff;
+}
+
+.ant-collapse {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.ant-collapse-item {
+  border: 1px solid #f0f0f0;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.ant-collapse-header {
+  font-weight: 500 !important;
+}
+
+.appointment-details {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.appointment-details p {
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.appointment-details b {
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.medical-record-block,
+.prescription-block {
+  background: #fff;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #f0f0f0;
+  margin-top: 8px;
+}
+
+.medical-record-block .anticon,
+.prescription-block .anticon {
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.medical-record-block span,
+.prescription-block span {
+  font-weight: 500;
+  color: #1890ff;
+}
+
+.ant-tag {
+  margin-left: 8px;
+  border-radius: 4px;
+}
+
+.ant-empty {
+  margin: 32px 0;
+}
+
+/* Custom colors for status tags */
+.ant-tag-blue {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+  color: #1890ff;
+}
+
+.ant-tag-green {
+  background: #f6ffed;
+  border-color: #b7eb8f;
+  color: #52c41a;
+}
+
+.ant-tag-red {
+  background: #fff1f0;
+  border-color: #ffa39e;
+  color: #f5222d;
+}
+
+.ant-tag-orange {
+  background: #fff7e6;
+  border-color: #ffd591;
+  color: #fa8c16;
+}

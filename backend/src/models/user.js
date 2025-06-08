@@ -56,7 +56,7 @@ export default (sequelize, DataTypes) => {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       avatar: {
         type: DataTypes.STRING,
@@ -110,7 +110,7 @@ export default (sequelize, DataTypes) => {
       { user_id: this.user_id, username: this.username },
       process.env.JWT_SECRET,
       {
-        expiresIn: "2h",
+        expiresIn: "12h",
       }
     );
   };

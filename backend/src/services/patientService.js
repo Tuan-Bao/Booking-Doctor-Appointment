@@ -14,7 +14,7 @@ const Patient = db.Patient;
 const User = db.User;
 const Doctor = db.Doctor;
 const Specialization = db.Specialization;
-const Schedule = db.Schedule;
+const DoctorShift = db.DoctorShift;
 const Appointment = db.Appointment;
 // const MedicalRecord = db.MedicalRecord;
 const Payment = db.Payment;
@@ -422,7 +422,7 @@ export const getDoctorProfileByPatient = async (user_id) => {
           as: "doctor",
           include: [
             { model: Specialization, as: "specialization" },
-            { model: Schedule, as: "schedule" },
+            { model: DoctorShift, as: "doctor_shifts" },
           ],
         },
       ],

@@ -6,9 +6,9 @@ import authorized from "../middlewares/authorization.js";
 const paymentRouter = express.Router();
 
 paymentRouter.post(
-  "/payment",
+  "/offline/:appointment_id",
   authentication,
-  authorized(["patient"]),
+  authorized(["admin"]),
   paymentController.paymentForAppointment
 );
 

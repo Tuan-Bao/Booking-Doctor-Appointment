@@ -4,15 +4,19 @@ import NotFoundError from "../errors/not_found.js";
 import cloudinary from "../config/cloudinary.js";
 import { formatToVNTime } from "../helper/formatToVNTime.js";
 import { isSameDay } from "../helper/isSameDay.js";
-
+// import { sequelize } from "../models/index.js";
+import { literal } from "sequelize";
 const db = await initDB();
 const Doctor = db.Doctor;
 const User = db.User;
 const Patient = db.Patient;
 const Specialization = db.Specialization;
-const Schedule = db.Schedule;
+// const Schedule = db.Schedule;
 const Appointment = db.Appointment;
 const Feedback = db.Feedback;
+const DoctorShift = db.DoctorShift;
+const MedicalRecord = db.MedicalRecord;
+const Prescription = db.Prescription;
 
 export const loginDoctor = async (email, password) => {
   try {
@@ -53,31 +57,88 @@ export const loginDoctor = async (email, password) => {
   }
 };
 
-export const getAllDoctors = async ({ specialization_id }) => {
+export const getAllDoctors = async ({
+  specialization_id,
+  date,
+  shift_type,
+  start_time,
+  end_time,
+}) => {
   try {
     const where = {};
     if (specialization_id) {
       where.specialization_id = specialization_id;
     }
-    const doctors = await Doctor.findAll({
-      where,
-      include: [
-        {
-          model: User,
-          as: "user",
-          attributes: { exclude: ["password"] },
-        },
-        {
-          model: Specialization,
-          as: "specialization",
-        },
-      ],
-    });
+    let doctors;
+    // Nếu có tìm kiếm theo ca làm việc
+    if (date || shift_type || start_time || end_time) {
+      // Lấy các ca làm việc phù hợp
+      const shiftWhere = {};
+      if (date) shiftWhere.shift_date = date;
+      if (shift_type) shiftWhere.shift_type = shift_type;
+      if (start_time) shiftWhere.start_time = start_time;
+      if (end_time) shiftWhere.end_time = end_time;
+      // Lấy tất cả ca phù hợp
 
+      const shiftList = await DoctorShift.findAll({ where: shiftWhere });
+      // Lọc các bác sĩ có ca làm việc phù hợp
+      const doctorIds = shiftList.map((s) => s.doctor_id);
+      // Nếu không có ca nào phù hợp thì trả về rỗng
+      if (doctorIds.length === 0) {
+        return { message: "Success", doctors: [] };
+      }
+      // Lấy thông tin bác sĩ
+      doctors = await Doctor.findAll({
+        where: { ...where, doctor_id: doctorIds },
+        include: [
+          { model: User, as: "user", attributes: { exclude: ["password"] } },
+          { model: Specialization, as: "specialization" },
+        ],
+      });
+      // // Nếu muốn loại bỏ bác sĩ đã kín lịch trong ca đó:
+      // if (date && (shift_type || (start_time && end_time))) {
+      //   // Lọc các bác sĩ đã kín lịch (có appointment trong ca này)
+      //   const availableDoctors = [];
+      //   for (const doctor of doctors) {
+      //     // Tìm ca làm việc của bác sĩ này
+      //     const shift = shiftList.find((s) => s.doctor_id === doctor.doctor_id);
+      //     if (!shift) continue;
+      //     // Tìm appointment trong ca này
+      //     const appts = await Appointment.findAll({
+      //       where: {
+      //         doctor_id: doctor.doctor_id,
+      //         appointment_datetime: {
+      //           [db.Sequelize.Op.gte]: new Date(
+      //             `${shift.shift_date}T${shift.start_time}`
+      //           ),
+      //           [db.Sequelize.Op.lt]: new Date(
+      //             `${shift.shift_date}T${shift.end_time}`
+      //           ),
+      //         },
+      //         status: { [db.Sequelize.Op.in]: ["scheduled"] },
+      //       },
+      //     });
+      //     // Nếu chưa kín lịch (ví dụ: chưa có appointment hoặc còn slot), cho vào danh sách
+      //     // Ở đây bạn có thể kiểm tra số lượng slot tối đa/ca nếu muốn
+      //     if (appts.length === 0) {
+      //       availableDoctors.push(doctor);
+      //     }
+      //   }
+      //   doctors = availableDoctors;
+      // }
+    } else {
+      // Không truyền ngày/ca, trả về tất cả bác sĩ như cũ
+      doctors = await Doctor.findAll({
+        where,
+        include: [
+          { model: User, as: "user", attributes: { exclude: ["password"] } },
+          { model: Specialization, as: "specialization" },
+        ],
+      });
+    }
     if (doctors.length === 0) {
       throw new NotFoundError("No doctors found");
     }
-
     return {
       message: "Success",
       doctors,
@@ -90,7 +151,7 @@ export const getAllDoctors = async ({ specialization_id }) => {
   }
 };
 
-// user + doctor + specialization + schedule
+// user + doctor + specialization + doctor_shifts
 export const getDoctorProfile = async (user_id) => {
   try {
     const user = await User.findByPk(user_id, {
@@ -101,7 +162,7 @@ export const getDoctorProfile = async (user_id) => {
           as: "doctor",
           include: [
             { model: Specialization, as: "specialization" },
-            { model: Schedule, as: "schedule" },
+            { model: DoctorShift, as: "doctor_shifts" },
           ],
         },
       ],
@@ -169,7 +230,28 @@ export const getDoctorAppointments = async (
           ],
         },
       ],
-      order: [["appointment_datetime", "DESC"]],
+      // Sắp xếp: check-in trước, chưa check-in sau, no_show cuối cùng, trong mỗi nhóm theo thời gian tăng dần
+      order: [
+        // [
+        //   db.sequelize.literal(
+        //     `FIELD(arrival_status, 'arrived', 'pending', 'no_show')`
+        //   ),
+        //   "ASC",
+        // ],
+        // [
+        //   db.sequelize.literal(
+        //     `CASE WHEN arrival_status = 'arrived' THEN checkin_time ELSE appointment_datetime END`
+        //   ),
+        //   "ASC",
+        // ],
+        // ["appointment_datetime", "ASC"],
+        [
+          literal(
+            "COALESCE(`Appointment`.`checkin_time`, `Appointment`.`appointment_datetime`)"
+          ),
+          "DESC",
+        ],
+      ],
       limit,
       offset,
     });
@@ -177,6 +259,9 @@ export const getDoctorAppointments = async (
     const formattedAppointments = appointments.map((a) => ({
       ...a.toJSON(),
       appointment_datetime: formatToVNTime(a.appointment_datetime),
+      checkin_time: a.checkin_time
+        ? formatToVNTime(a.checkin_time)
+        : formatToVNTime(a.appointment_datetime),
     }));
 
     return {
@@ -228,13 +313,32 @@ export const getPatientAppointmentsByDoctor = async (user_id) => {
             { model: Specialization, as: "specialization" },
           ],
         },
+        {
+          model: MedicalRecord,
+          as: "medical_record",
+        },
+        {
+          model: Prescription,
+          as: "prescription",
+        },
       ],
-      order: [["appointment_datetime", "DESC"]],
+      // order: [["appointment_datetime", "DESC"]],
+      order: [
+        [
+          literal(
+            "COALESCE(`Appointment`.`checkin_time`, `Appointment`.`appointment_datetime`)"
+          ),
+          "DESC",
+        ],
+      ],
     });
 
     const formattedAppointments = appointments.map((a) => ({
       ...a.toJSON(),
       appointment_datetime: formatToVNTime(a.appointment_datetime),
+      checkin_time: a.checkin_time
+        ? formatToVNTime(a.checkin_time)
+        : formatToVNTime(a.appointment_datetime),
     }));
 
     return {
@@ -306,14 +410,14 @@ export const addDoctor = async (doctorData) => {
       { transaction }
     );
 
-    const doctor_id = newDoctor.doctor_id;
+    // const doctor_id = newDoctor.doctor_id;
 
-    await Schedule.create(
-      {
-        doctor_id,
-      },
-      { transaction }
-    );
+    // await Schedule.create(
+    //   {
+    //     doctor_id,
+    //   },
+    //   { transaction }
+    // );
 
     await transaction.commit();
     return { message: "Success" };
@@ -324,7 +428,7 @@ export const addDoctor = async (doctorData) => {
     }
     throw new Error(error.message);
   }
-}; // add user + doctor + schedule
+}; // add user + doctor
 
 export const updateDoctorProfile = async (user_id, updateData) => {
   const transaction = await db.sequelize.transaction();
@@ -398,7 +502,7 @@ export const deleteDoctor = async (user_id) => {
       throw new NotFoundError("Doctor not found");
     }
 
-    await user.destroy({ transaction }); // CASCADE sẽ xóa doctor & schedule liên quan
+    await user.destroy({ transaction });
 
     await transaction.commit();
     return { message: "Success" };
@@ -455,7 +559,7 @@ export const getDoctorFeedback = async (user_id) => {
   }
 };
 
-export const getDoctorAppointmentStats = async (user_id) => {
+export const getDoctorShifts = async (user_id) => {
   try {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
@@ -473,27 +577,30 @@ export const getDoctorAppointmentStats = async (user_id) => {
 
     const doctor_id = doctor.doctor_id;
 
-    const appointments = await Appointment.findAll({
+    const shifts = await DoctorShift.findAll({
       where: { doctor_id },
+      order: [
+        ["shift_date", "ASC"],
+        ["start_time", "ASC"],
+      ],
     });
 
-    const today = new Date();
-    const todayAppointments = appointments.filter((appt) => {
-      const apptDate = new Date(appt.appointment_datetime);
-      return isSameDay(apptDate, today);
+    const formattedShifts = shifts.map((shift) => {
+      const shiftDate = new Date(shift.shift_date);
+
+      return {
+        ...shift.toJSON(),
+        shift_date: shiftDate.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }),
+      };
     });
 
     return {
       message: "Success",
-      total: todayAppointments.length,
-      waiting: appointments.filter(
-        (a) => a.status === "waiting_for_confirmation"
-      ).length,
-      accepted: appointments.filter((a) => a.status === "accepted").length,
-      cancelled: appointments.filter((a) => a.status === "cancelled").length,
-      completed: appointments.filter((a) => a.status === "completed").length,
-      notComing: appointments.filter((a) => a.status === "patient_not_coming")
-        .length,
+      shifts: formattedShifts,
     };
   } catch (error) {
     if (error instanceof NotFoundError) {

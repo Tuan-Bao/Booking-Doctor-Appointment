@@ -55,8 +55,9 @@
 /* Main Dashboard Content */
 .dashboard-content {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr;
   gap: 20px;
+  min-height: 350px;
 }
 
 /* Patient Summary Section (Left) */
@@ -112,6 +113,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 400px;
 }
 
 .today-appointments h3 {
@@ -180,7 +182,7 @@
   object-fit: cover;
 }
 
-.patient-info {
+.patient-info-dashboard-doctor {
   display: flex;
   flex-direction: column;
 }
@@ -200,7 +202,7 @@
   flex-direction: column;
 }
 
-.appointment-status {
+.appointment-reason {
   text-align: center;
   display: flex;
   justify-content: center;
@@ -275,7 +277,9 @@
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  max-width: 400px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
 }
 
 .next-patient h3 {
@@ -304,8 +308,8 @@
 }
 
 .patient-avatar-img {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #f0f0f0;
@@ -326,23 +330,25 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
 }
 
 .patient-id-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
 }
 
 .patient-id-value {
   color: #666;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .patient-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+  margin-top: 20px;
 }
 
 .detail-item {
@@ -353,19 +359,19 @@
 
 .detail-label {
   color: #777;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 
 .detail-value {
   color: #333;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
 }
 
 .action-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin: 10px 0;
   padding: 0px 40px;
 }
@@ -375,7 +381,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 12px 20px;
   border: none;
   border-radius: 5px;
   font-weight: 500;
@@ -402,6 +408,7 @@
 
 /* Bottom Section */
 .bottom-section {
+  margin-top: 50px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;

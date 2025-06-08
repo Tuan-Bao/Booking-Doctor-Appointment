@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Calendar,
-  Card,
-  TimePicker,
-  Button,
-  Typography,
-  Tag,
-  Space,
-  Spin,
-  Alert,
-} from "antd";
-import { ClockCircleOutlined, DeleteOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { Card, Typography, Tag, Spin, Alert, Empty } from "antd";
+import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAppContext } from "../../../context/AppContext";
@@ -22,181 +11,121 @@ const { Title, Text } = Typography;
 const Schedule = () => {
   const { API_URL } = useAppContext();
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [timeSlots, setTimeSlots] = useState([]);
-  const [selectedTime, setSelectedTime] = useState(null);
-
-  // Get the date range for the next 7 days
-  const today = dayjs();
-  const nextWeek = today.add(6, "day");
+  const [shifts, setShifts] = useState([]);
 
   useEffect(() => {
-    fetchSchedule();
+    fetchShifts();
   }, []);
 
-  const fetchSchedule = async () => {
+  // useEffect(() => {
+  //   console.log(shifts);
+  // }, [shifts]);
+
+  const fetchShifts = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/doctor/schedule`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setTimeSlots(response.data.schedule || []);
-    } catch (error) {
-      toast.error("Failed to fetch schedule");
-      console.error("Error fetching schedule:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    setSelectedTime(null);
-  };
-
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-
-  const handleAddTimeSlot = async () => {
-    if (!selectedDate || !selectedTime) {
-      toast.warning("Please select both date and time");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const dateTime =
-        selectedDate.format("YYYY-MM-DD") +
-        " " +
-        selectedTime.format("HH:mm:ss");
-
-      await axios.post(
-        `${API_URL}/doctor/schedule`,
-        { datetime: dateTime },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      toast.success("Time slot added successfully");
-      fetchSchedule();
-      setSelectedTime(null);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add time slot");
-      console.error("Error adding time slot:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteTimeSlot = async (slotId) => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_URL}/doctor/schedule/${slotId}`, {
+      const response = await axios.get(`${API_URL}/doctor/shifts`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      toast.success("Time slot deleted successfully");
-      fetchSchedule();
+      // Lấy ngày hiện tại (dd/mm/yyyy)
+      const today = new Date();
+      const todayStr = today.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+
+      // Lọc các ca làm từ hôm nay trở về sau
+      const filteredShifts = (response.data.shifts || []).filter((shift) => {
+        // shift.shift_date dạng dd/mm/yyyy
+        const [d, m, y] = shift.shift_date.split("/");
+        const shiftDate = new Date(`${y}-${m}-${d}`);
+        // So sánh ngày
+        return shiftDate >= new Date(todayStr.split("/").reverse().join("-"));
+      });
+
+      setShifts(filteredShifts);
     } catch (error) {
-      toast.error("Failed to delete time slot");
-      console.error("Error deleting time slot:", error);
+      toast.error("Failed to fetch shifts");
+      console.error("Error fetching shifts:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const dateCellRender = (date) => {
-    const slotsForDate = timeSlots.filter(
-      (slot) =>
-        dayjs(slot.datetime).format("YYYY-MM-DD") === date.format("YYYY-MM-DD")
-    );
+  // Group shifts by date
+  const groupedShifts = shifts.reduce((acc, shift) => {
+    const date = shift.shift_date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(shift);
+    return acc;
+  }, {});
 
+  if (loading) {
     return (
-      <ul className="schedule-slots">
-        {slotsForDate.map((slot) => (
-          <li key={slot.id}>
-            <Tag
-              color="error"
-              icon={<ClockCircleOutlined />}
-              closable
-              onClose={() => handleDeleteTimeSlot(slot.id)}
-            >
-              {dayjs(slot.datetime).format("HH:mm")}
-            </Tag>
-          </li>
-        ))}
-      </ul>
+      <div className="schedule-container">
+        <Card className="schedule-card">
+          <div className="loading-container">
+            <Spin size="large" />
+            <Text>Loading schedule...</Text>
+          </div>
+        </Card>
+      </div>
     );
-  };
-
-  const disabledDate = (current) => {
-    return current.isBefore(today, "day") || current.isAfter(nextWeek, "day");
-  };
+  }
 
   return (
     <div className="schedule-container">
       <Card className="schedule-card">
-        <Title level={2}>Manage Your Schedule</Title>
+        <Title level={2}>Work Schedule</Title>
         <Alert
-          message="Schedule Management"
-          description="Select dates within the next 7 days to mark your unavailable time slots. These slots will not be available for patient bookings."
+          message="Schedule Information"
+          description="View your work schedule for the upcoming days. Each time slot shows your working hours."
           type="info"
           showIcon
           className="schedule-alert"
         />
 
         <div className="schedule-content">
-          <div className="calendar-section">
-            <Calendar
-              fullscreen={false}
-              onSelect={handleDateSelect}
-              dateCellRender={dateCellRender}
-              disabledDate={disabledDate}
-              value={selectedDate}
-            />
-          </div>
-
-          <div className="time-picker-section">
-            {selectedDate && (
-              <Space
-                direction="vertical"
-                size="large"
-                className="time-picker-container"
-              >
-                <Title level={4}>
-                  Selected Date: {selectedDate?.format("MMMM D, YYYY")}
-                </Title>
-                <Space>
-                  <TimePicker
-                    format="HH:mm"
-                    minuteStep={30}
-                    value={selectedTime}
-                    onChange={handleTimeSelect}
-                    placeholder="Select time"
-                    className="time-picker"
-                  />
-                  <Button
-                    type="primary"
-                    onClick={handleAddTimeSlot}
-                    loading={loading}
-                  >
-                    Add Break Time
-                  </Button>
-                </Space>
-              </Space>
-            )}
-          </div>
+          {Object.keys(groupedShifts).length === 0 ? (
+            <Empty description="No shifts scheduled" />
+          ) : (
+            Object.entries(groupedShifts).map(([date, dateShifts]) => (
+              <div key={date} className="schedule-date-group">
+                <div className="schedule-date-header">
+                  <CalendarOutlined />
+                  <Text strong>{date}</Text>
+                </div>
+                <div className="schedule-shifts">
+                  {dateShifts.map((shift) => (
+                    <div key={shift.shift_id} className="schedule-item">
+                      <div className="schedule-time">
+                        <ClockCircleOutlined />
+                        <Text strong>
+                          {shift.start_time} - {shift.end_time}
+                        </Text>
+                      </div>
+                      <Tag
+                        color={
+                          shift.shift_type === "morning" ? "blue" : "orange"
+                        }
+                      >
+                        {shift.shift_type === "morning"
+                          ? "Morning Shift"
+                          : "Afternoon Shift"}
+                      </Tag>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </Card>
     </div>

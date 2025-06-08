@@ -92,6 +92,11 @@
   margin-top: 24px;
 }
 
+.form-actions .ant-btn {
+  margin-top: 0px !important;
+  height: 40px !important;
+}
+
 @media (max-width: 576px) {
   .profile-container {
     padding: 16px;

@@ -33,11 +33,13 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import "./DoctorList.css";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
 const AdminDoctorList = () => {
   const { API_URL } = useAppContext();
+  const navigate = useNavigate();
 
   const [specializations, setSpecializations] = useState([]);
   const [selectedSpec, setSelectedSpec] = useState(null);
@@ -157,7 +159,7 @@ const AdminDoctorList = () => {
       const { data } = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(data);
+      // console.log(data);
       setDoctors(data.doctors);
 
       // Cập nhật thống kê
@@ -207,7 +209,18 @@ const AdminDoctorList = () => {
       title: "Name",
       dataIndex: ["user", "username"],
       key: "username",
-      render: (name) => <span className="doctor-name">{name}</span>,
+      render: (name, record) => (
+        <span
+          className="doctor-name doctor-link"
+          style={{
+            cursor: "pointer",
+            color: "#1890ff",
+          }}
+          onClick={() => navigate(`/admin/doctor/${record.user.user_id}`)}
+        >
+          {name}
+        </span>
+      ),
       sorter: (a, b) => a.user.username.localeCompare(b.user.username),
     },
     {
@@ -467,7 +480,13 @@ const AdminDoctorList = () => {
 
             <Form.Item>
               <Space>
-                <Button onClick={() => setModalVisible(false)}>Cancel</Button>
+                <Button
+                  type="primary"
+                  className="cancel-button-doctor-admin"
+                  onClick={() => setModalVisible(false)}
+                >
+                  Cancel
+                </Button>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   Create Doctor
                 </Button>

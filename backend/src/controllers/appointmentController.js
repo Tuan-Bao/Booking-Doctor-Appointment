@@ -2,7 +2,7 @@ import * as appointmentService from "../services/appointmentService.js";
 import { StatusCodes } from "http-status-codes";
 import BadRequestError from "../errors/bad_request.js";
 
-export const bookAppointment = async (req, res, next) => {
+export const bookAppointmentOnline = async (req, res, next) => {
   try {
     const { user_id } = req.user;
     const { doctor_id, appointment_datetime } = req.body;
@@ -11,7 +11,7 @@ export const bookAppointment = async (req, res, next) => {
       throw new BadRequestError("Missing required fields");
     }
 
-    const result = await appointmentService.bookAppointment(
+    const result = await appointmentService.bookAppointmentOnline(
       user_id,
       doctor_id,
       appointment_datetime
@@ -111,11 +111,12 @@ export const getAppointmentsDetails = async (req, res, next) => {
 
 export const getAppointments = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status } = req.query;
+    const { page = 1, limit = 10, status, date } = req.query;
     const result = await appointmentService.getAppointments(
       parseInt(page),
       parseInt(limit),
-      status
+      status,
+      date
     );
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
@@ -127,6 +128,23 @@ export const getAppointmentsStats = async (req, res, next) => {
   try {
     const result = await appointmentService.getAppointmentsStats();
     return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const bookAppointmentOffline = async (req, res, next) => {
+  try {
+    const { patient_id, doctor_id, reason } = req.body;
+    if (!patient_id || !doctor_id) {
+      throw new BadRequestError("Missing required fields");
+    }
+    const result = await appointmentService.bookAppointmentOffline(
+      patient_id,
+      doctor_id,
+      reason
+    );
+    return res.status(StatusCodes.CREATED).json(result);
   } catch (error) {
     next(error);
   }

@@ -18,8 +18,15 @@ export const loginDoctor = async (req, res, next) => {
 
 export const getAllDoctors = async (req, res, next) => {
   try {
-    const { specialization_id } = req.query;
-    const result = await doctorService.getAllDoctors({ specialization_id });
+    const { specialization_id, date, shift_type, start_time, end_time } =
+      req.query;
+    const result = await doctorService.getAllDoctors({
+      specialization_id,
+      date,
+      shift_type,
+      start_time,
+      end_time,
+    });
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);
@@ -152,10 +159,10 @@ export const getDoctorFeedback = async (req, res, next) => {
   }
 };
 
-export const getDoctorAppointmentStats = async (req, res, next) => {
+export const getDoctorShifts = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const result = await doctorService.getDoctorAppointmentStats(user_id);
+    const result = await doctorService.getDoctorShifts(user_id);
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);

@@ -18,9 +18,9 @@ export default (sequelize, DataTypes) => {
         foreignKey: "specialization_id",
         as: "specialization",
       });
-      Doctor.hasOne(models.Schedule, {
+      Doctor.hasMany(models.DoctorShift, {
         foreignKey: "doctor_id",
-        as: "schedule",
+        as: "doctor_shifts",
       });
       Doctor.hasMany(models.Appointment, {
         foreignKey: "doctor_id",

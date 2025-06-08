@@ -4,33 +4,8 @@
   min-height: 100vh;
 }
 
-.stats-row {
-  margin-bottom: 24px;
-}
-
-.stats-row .ant-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.stats-row .ant-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stats-row .ant-statistic-title {
-  font-size: 14px;
-  color: #666;
-}
-
-.stats-row .ant-statistic-content {
-  font-size: 24px;
-  font-weight: 600;
-}
-
 .status-tags {
-  margin-bottom: 24px;
+  margin: 24px 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -71,21 +46,7 @@
   background-color: #f5f7fb;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .appointments-container {
-    padding: 16px;
-  }
-
-  .stats-row .ant-col {
-    margin-bottom: 16px;
-  }
-
-  .status-tags {
-    justify-content: center;
-  }
-}
-
+/* Action Dropdown Styles */
 .action-dropdown {
   position: relative;
   display: inline-block;
@@ -137,4 +98,98 @@
 .action-menu-item .anticon {
   font-size: 16px;
   color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .appointments-container {
+    padding: 16px;
+  }
+
+  .status-tags {
+    justify-content: center;
+  }
+}
+
+/* Modal Styles - Medical Record */
+.ant-modal-content {
+  border-radius: 12px;
+  width: 580px !important;
+  max-width: 95vw;
+}
+.ant-modal {
+  top: 10px !important;
+}
+.ant-modal-header {
+  background: #f7faff;
+  border-bottom: 1px solid #e8e8e8;
+}
+.ant-modal-title {
+  color: #222;
+  font-weight: 600;
+  font-size: 18px;
+}
+.ant-modal-body {
+  padding: 24px 24px 16px 24px;
+}
+.ant-divider {
+  margin: 14px 0px 8px 0px !important;
+  border-color: #e8e8e8 !important;
+}
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: #333;
+  font-size: 15px;
+}
+.ant-input,
+.ant-input-textarea {
+  border-radius: 7px !important;
+  font-size: 15px;
+}
+.ant-input {
+  min-height: 60px !important;
+}
+
+.ant-btn-primary {
+  height: 38px;
+  border-radius: 7px;
+  font-weight: 500;
+  font-size: 15px;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .ant-modal-body {
+    padding: 16px 8px 8px 8px;
+  }
+  .ant-modal-header {
+    padding: 12px 8px;
+  }
+}
+
+.modal-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3a4a;
+  margin-bottom: 10px;
+  margin-top: 0;
+  letter-spacing: 0.5px;
+}
+
+.ant-modal-body .ant-form {
+  display: block !important;
+}
+.ant-modal-body .ant-form-item {
+  width: 100% !important;
+  display: block !important;
+}
+
+.modal-btn-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.modal-btn-group .ant-btn {
+  min-width: 100px;
+  justify-content: center;
 }

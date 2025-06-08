@@ -55,11 +55,11 @@ const Dashboard = () => {
     // }));
     const statusData = Object.entries(statusCounts).map(([status, count]) => {
       let typeName = status.replace(/_/g, " ").toUpperCase();
-      if (typeName === "WAITING FOR CONFIRMATION") {
-        typeName = "PENDING";
-      } else if (typeName === "PATIENT NOT COMING") {
-        typeName = "NO SHOW";
-      }
+      // if (typeName === "WAITING FOR CONFIRMATION") {
+      //   typeName = "PENDING";
+      // } else if (typeName === "PATIENT NOT COMING") {
+      //   typeName = "NO SHOW";
+      // }
       return {
         type: typeName,
         value: count,
@@ -186,10 +186,10 @@ const Dashboard = () => {
     xField: "name",
     yField: "appointments",
     label: {
-      position: "middle",
+      position: "top",
       style: {
-        fill: "#FFFFFF",
-        opacity: 0.6,
+        fill: "#000000",
+        opacity: 0.8,
       },
     },
     xAxis: {

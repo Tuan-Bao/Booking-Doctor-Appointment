@@ -366,7 +366,13 @@ const Specializations = () => {
 
             <Form.Item className="form-actions">
               <Space>
-                <Button onClick={() => setModalVisible(false)}>Cancel</Button>
+                <Button
+                  type="primary"
+                  className="cancel-button-specialization-admin"
+                  onClick={() => setModalVisible(false)}
+                >
+                  Cancel
+                </Button>
                 <Button type="primary" htmlType="submit" loading={loadingAdd}>
                   {editingId ? "Update" : "Create"}
                 </Button>

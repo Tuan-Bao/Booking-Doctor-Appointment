@@ -64,6 +64,15 @@ export default (sequelize, DataTypes) => {
         },
         onDelete: "CASCADE",
       },
+      booking_source: {
+        type: DataTypes.ENUM("online", "offline"),
+        allowNull: false,
+        defaultValue: "online",
+      },
+      reason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       appointment_datetime: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -73,15 +82,18 @@ export default (sequelize, DataTypes) => {
         },
       },
       status: {
-        type: DataTypes.ENUM(
-          "waiting_for_confirmation",
-          "accepted",
-          "cancelled",
-          "completed",
-          "patient_not_coming"
-        ),
+        type: DataTypes.ENUM("scheduled", "completed", "cancelled", "no_show"),
         allowNull: false,
-        defaultValue: "waiting_for_confirmation",
+        defaultValue: "scheduled",
+      },
+      arrival_status: {
+        type: DataTypes.ENUM("pending", "arrived", "no_show"),
+        allowNull: false,
+        defaultValue: "pending",
+      },
+      checkin_time: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       fees: {
         type: DataTypes.INTEGER,
