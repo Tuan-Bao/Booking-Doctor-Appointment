@@ -5,7 +5,7 @@ import cloudinary from "../config/cloudinary.js";
 import { formatToVNTime } from "../helper/formatToVNTime.js";
 import { isSameDay } from "../helper/isSameDay.js";
 // import { sequelize } from "../models/index.js";
-import { literal } from "sequelize";
+import { Op, literal } from "sequelize";
 const db = await initDB();
 const Doctor = db.Doctor;
 const User = db.User;
@@ -76,8 +76,8 @@ export const getAllDoctors = async ({
       const shiftWhere = {};
       if (date) shiftWhere.shift_date = date;
       if (shift_type) shiftWhere.shift_type = shift_type;
-      if (start_time) shiftWhere.start_time = start_time;
-      if (end_time) shiftWhere.end_time = end_time;
+      if (start_time) shiftWhere.start_time = { [Op.lte]: start_time }; // <=
+      if (end_time) shiftWhere.end_time = { [Op.gte]: end_time }; // >=
       // Lấy tất cả ca phù hợp
 
       const shiftList = await DoctorShift.findAll({ where: shiftWhere });

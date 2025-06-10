@@ -13,8 +13,8 @@ doctorRouter.post("/login", doctorController.loginDoctor);
 
 doctorRouter.get(
   "/all",
-  authentication,
-  authorized(["patient", "admin"]),
+  // authentication,
+  // authorized(["patient", "admin"]),
   doctorController.getAllDoctors
 );
 

@@ -5,7 +5,7 @@ import BadRequestError from "../errors/bad_request.js";
 export const bookAppointmentOnline = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const { doctor_id, appointment_datetime } = req.body;
+    const { doctor_id, appointment_datetime, reason } = req.body;
 
     if (!doctor_id || !appointment_datetime) {
       throw new BadRequestError("Missing required fields");
@@ -14,7 +14,8 @@ export const bookAppointmentOnline = async (req, res, next) => {
     const result = await appointmentService.bookAppointmentOnline(
       user_id,
       doctor_id,
-      appointment_datetime
+      appointment_datetime,
+      reason
     );
 
     return res.status(StatusCodes.CREATED).json(result);
@@ -145,6 +146,16 @@ export const bookAppointmentOffline = async (req, res, next) => {
       reason
     );
     return res.status(StatusCodes.CREATED).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const payAppointment = async (req, res, next) => {
+  try {
+    const { appointment_id } = req.params;
+    const result = await appointmentService.payAppointment(appointment_id);
+    return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);
   }

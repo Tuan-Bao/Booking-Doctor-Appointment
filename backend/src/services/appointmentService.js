@@ -21,7 +21,8 @@ const DoctorShift = db.DoctorShift;
 export const bookAppointmentOnline = async (
   user_id,
   doctor_id,
-  appointment_datetime
+  appointment_datetime,
+  reason
 ) => {
   const transaction = await db.sequelize.transaction();
   try {
@@ -56,24 +57,28 @@ export const bookAppointmentOnline = async (
 
     let compareTime = new Date(appointment_datetime);
     let now = new Date();
-    let minimumAllowedTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    let minimumAllowedTime = new Date(now.getTime() + 12 * 60 * 60 * 1000);
     const minimumTimestamp = minimumAllowedTime.getTime();
     const compareTimestamp = compareTime.getTime();
 
     if (compareTimestamp <= minimumTimestamp) {
       throw new BadRequestError(
-        "Appointments must be booked at least 24 hours in advance."
+        "Appointments must be booked at least 12 hours in advance."
       );
     }
 
     // Kiểm tra ca làm việc (DoctorShift) của bác sĩ có phù hợp không
     const shiftDate = appointment_datetime.slice(0, 10); // YYYY-MM-DD
     const shiftTime = appointment_datetime.slice(11, 19); // HH:mm:ss
+    const hour = parseInt(shiftTime.split(":")[0]);
+
+    const shift_type = hour <= 12 ? "morning" : "afternoon";
 
     const shift = await DoctorShift.findOne({
       where: {
         doctor_id,
         shift_date: shiftDate,
+        shift_type,
         start_time: { [db.Sequelize.Op.lte]: shiftTime },
         end_time: { [db.Sequelize.Op.gt]: shiftTime },
       },
@@ -123,6 +128,7 @@ export const bookAppointmentOnline = async (
         appointment_datetime,
         fees: doctor.specialization.fees,
         booking_source: "online",
+        reason,
       },
       { transaction }
     );
@@ -169,11 +175,15 @@ export const bookAppointmentOffline = async (
     // Kiểm tra ca làm việc (DoctorShift)
     const shiftDate = appointment_datetime.slice(0, 10);
     const shiftTime = appointment_datetime.slice(11, 19);
+    const hour = parseInt(shiftTime.split(":")[0]);
+
+    const shift_type = hour <= 12 ? "morning" : "afternoon";
 
     const shift = await DoctorShift.findOne({
       where: {
         doctor_id,
         shift_date: shiftDate,
+        shift_type,
         start_time: { [db.Sequelize.Op.lte]: shiftTime },
         end_time: { [db.Sequelize.Op.gt]: shiftTime },
       },
@@ -750,6 +760,57 @@ export const getAppointmentsStats = async () => {
     };
   } catch (error) {
     if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const payAppointment = async (appointment_id) => {
+  try {
+    const appointment = await Appointment.findByPk(appointment_id, {
+      include: [
+        {
+          model: Patient,
+          as: "patient",
+          include: [
+            { model: User, as: "user", attributes: { exclude: ["password"] } },
+          ],
+        },
+        {
+          model: Doctor,
+          as: "doctor",
+          include: [
+            { model: User, as: "user", attributes: { exclude: ["password"] } },
+            { model: Specialization, as: "specialization" },
+          ],
+        },
+        {
+          model: Payment,
+          as: "payment",
+        },
+      ],
+    });
+    if (!appointment) {
+      throw new NotFoundError("Appointment not found");
+    }
+    if (appointment.status !== "completed") {
+      throw new BadRequestError("Appointment is not completed");
+    }
+
+    const result = appointment.toJSON();
+
+    result.appointment_datetime = formatToVNTime(
+      appointment.appointment_datetime
+    );
+    result.checkin_time = formatToVNTime(appointment.checkin_time);
+
+    return { message: "Success", appointment: result };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    if (error instanceof BadRequestError) {
       throw error;
     }
     throw new Error(error.message);

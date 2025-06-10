@@ -117,7 +117,10 @@ export const updatePatientProfile = async (req, res, next) => {
 export const getPatientAppointments = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const result = await patientService.getPatientAppointments(user_id);
+    const result = await patientService.getPatientAppointments(
+      user_id,
+      req.query
+    );
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);
@@ -127,7 +130,8 @@ export const getPatientAppointments = async (req, res, next) => {
 export const getPatientPayments = async (req, res, next) => {
   try {
     const { user_id } = req.user;
-    const result = await patientService.getPatientPayments(user_id);
+    // const { page, limit } = req.query;
+    const result = await patientService.getPatientPayments(user_id, req.query);
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);

@@ -11,8 +11,6 @@ const upload = multer({ storage });
 
 specializationRouter.get(
   "/all",
-  authentication,
-  authorized(["patient", "doctor", "admin"]),
   specializationController.getAllSpecializations
 );
 

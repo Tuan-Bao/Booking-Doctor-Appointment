@@ -91,4 +91,11 @@ appointmentRouter.post(
   appointmentController.bookAppointmentOffline
 );
 
+appointmentRouter.get(
+  "/payment/:appointment_id",
+  authentication,
+  authorized(["patient"]),
+  appointmentController.payAppointment
+);
+
 export default appointmentRouter;

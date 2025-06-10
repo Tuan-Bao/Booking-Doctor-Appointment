@@ -4,7 +4,7 @@ import NotFoundError from "../errors/not_found.js";
 import cloudinary from "../config/cloudinary.js";
 import { sendVerifyLink } from "../utils/gmail.js";
 import { configDotenv } from "dotenv";
-import { Op } from "sequelize";
+import { literal, Op } from "sequelize";
 import { formatToVNTime } from "../helper/formatToVNTime.js";
 
 configDotenv({ path: "../.env" });
@@ -305,7 +305,7 @@ export const updatePatientProfile = async (user_id, updateData) => {
   }
 };
 
-export const getPatientAppointments = async (user_id) => {
+export const getPatientAppointments = async (user_id, query) => {
   try {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
@@ -321,8 +321,40 @@ export const getPatientAppointments = async (user_id) => {
       throw new NotFoundError("Patient not found");
     }
 
+    // Phân trang
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Xây dựng điều kiện where
+    const whereClause = { patient_id: patient.patient_id };
+
+    // Filter theo status nếu có
+    if (query.status) {
+      whereClause.status = query.status;
+    }
+
+    // Filter theo date nếu có
+    if (query.date) {
+      const startDate = new Date(query.date);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(query.date);
+      endDate.setHours(23, 59, 59, 999);
+
+      whereClause.appointment_datetime = {
+        [Op.between]: [startDate, endDate],
+      };
+    }
+
+    // Lấy tổng số lịch hẹn
+    const totalAppointments = await Appointment.count({
+      where: whereClause,
+    });
+
+    // Lấy danh sách lịch hẹn với phân trang
     const appointments = await Appointment.findAll({
-      where: { patient_id: patient.patient_id },
+      where: whereClause,
       include: [
         {
           model: Doctor,
@@ -333,18 +365,36 @@ export const getPatientAppointments = async (user_id) => {
           ],
         },
       ],
-      order: [["appointment_datetime", "DESC"]], // Lịch hẹn được sắp xếp theo thời gian mới nhất đến cũ nhất
+      order: [
+        [
+          literal(
+            "COALESCE(`Appointment`.`checkin_time`, `Appointment`.`appointment_datetime`)"
+          ),
+          "DESC",
+        ],
+      ],
+      limit,
+      offset,
     });
 
     const formattedAppointments = appointments.map((a) => ({
       ...a.toJSON(),
       appointment_datetime: formatToVNTime(a.appointment_datetime),
+      checkin_time: a.checkin_time
+        ? formatToVNTime(a.checkin_time)
+        : formatToVNTime(a.appointment_datetime),
     }));
 
     return {
       message: "Success",
       user,
       appointments: formattedAppointments,
+      pagination: {
+        total: totalAppointments,
+        page,
+        limit,
+        totalPages: Math.ceil(totalAppointments / limit),
+      },
     };
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -354,7 +404,7 @@ export const getPatientAppointments = async (user_id) => {
   }
 };
 
-export const getPatientPayments = async (user_id) => {
+export const getPatientPayments = async (user_id, query) => {
   try {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
@@ -375,6 +425,17 @@ export const getPatientPayments = async (user_id) => {
       throw new NotFoundError("Patient not found");
     }
 
+    // Phân trang
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Lấy tổng số lịch hẹn
+    const totalAppointments = await Appointment.count({
+      where: { patient_id: patient.patient_id, status: "completed" },
+    });
+
+    // Lấy danh sách lịch hẹn với phân trang
     const appointments = await Appointment.findAll({
       where: { patient_id: patient.patient_id, status: "completed" },
       include: [
@@ -391,18 +452,37 @@ export const getPatientPayments = async (user_id) => {
           as: "payment",
         },
       ],
-      order: [["appointment_datetime", "DESC"]],
+      // order: [["appointment_datetime", "DESC"]],
+      order: [
+        [
+          literal(
+            "COALESCE(`Appointment`.`checkin_time`, `Appointment`.`appointment_datetime`)"
+          ),
+          "DESC",
+        ],
+      ],
+      limit,
+      offset,
     });
 
     const formattedAppointments = appointments.map((a) => ({
       ...a.toJSON(),
       appointment_datetime: formatToVNTime(a.appointment_datetime),
+      checkin_time: a.checkin_time
+        ? formatToVNTime(a.checkin_time)
+        : formatToVNTime(a.appointment_datetime),
     }));
 
     return {
       message: "Success",
       user,
       appointments: formattedAppointments, // chứa cả payment
+      pagination: {
+        total: totalAppointments,
+        page,
+        limit,
+        totalPages: Math.ceil(totalAppointments / limit),
+      },
     };
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -453,7 +533,16 @@ export const getDoctorAppointmentsByPatient = async (user_id) => {
   try {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
-      include: [{ model: Doctor, as: "doctor" }],
+      include: [
+        {
+          model: Doctor,
+          as: "doctor",
+          include: [
+            { model: Specialization, as: "specialization" },
+            { model: DoctorShift, as: "doctor_shifts" },
+          ],
+        },
+      ],
     });
 
     if (!user) {
@@ -473,6 +562,7 @@ export const getDoctorAppointmentsByPatient = async (user_id) => {
         status: {
           [Op.ne]: "cancelled",
         },
+        booking_source: "online",
       },
       order: [["appointment_datetime", "DESC"]],
     });
