@@ -1,0 +1,286 @@
+.admin-doctor-list {
+  padding: 20px;
+  background: #f5f6fa;
+  min-height: 100vh;
+}
+
+.admin-title {
+  margin-top: 10px;
+}
+
+.doctor-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-doctor-button {
+  margin: 24px 24px 24px auto;
+}
+
+.admin-doctor-list .ant-typography {
+  margin-bottom: 24px;
+  color: #1a3353;
+  font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-row {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card .stat-title {
+  color: #637381;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.stat-card .stat-value {
+  color: #1a3353;
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-card .stat-icon {
+  font-size: 20px;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Filter Tags */
+.spec-filter-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.spec-filter-card .ant-card-body {
+  padding: 16px;
+}
+
+.spec-filter-card .ant-tag {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+  margin: 4px;
+  border: none;
+}
+
+.spec-filter-card .ant-tag:hover {
+  opacity: 0.8;
+}
+
+.spec-filter-card .ant-tag.ant-tag-blue {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.spec-filter-card .ant-tag.ant-tag-default {
+  background: #f5f5f5;
+  color: #637381;
+}
+
+/* Table Card */
+.doctor-table-card {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.doctor-table-card .ant-card-body {
+  padding: 0;
+}
+
+.doctor-table-card .ant-table {
+  background: transparent;
+}
+
+.doctor-table-card .ant-table-thead > tr > th {
+  background: #f8faff;
+  color: #1a3353;
+  font-weight: 600;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doctor-table-card .ant-table-tbody > tr > td {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doctor-table-card .ant-table-tbody > tr:hover > td {
+  background: #f8faff;
+}
+
+/* Doctor Info Styles */
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 1px solid #4f46e5 !important;
+}
+
+.doctor-name {
+  font-weight: 500;
+  color: #1a3353;
+}
+
+.doctor-email {
+  color: #637381;
+  font-size: 13px;
+}
+
+.doctor-specialization {
+  background: #f8faff;
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: #1a3353;
+  font-size: 13px;
+  display: inline-block;
+}
+
+.doctor-degree {
+  background: #e6f7ff;
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: #1890ff;
+  font-size: 13px;
+  display: inline-block;
+}
+
+.doctor-experience {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #637381;
+}
+
+.doctor-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doctor-rating .ant-rate {
+  font-size: 14px;
+  color: #fadb14;
+}
+
+/* Pagination */
+.doctor-table-card .ant-pagination {
+  margin: 16px;
+  text-align: right;
+}
+
+.doctor-table-card .ant-pagination-item-active {
+  border-color: #1890ff;
+  background: #1890ff;
+}
+
+.doctor-table-card .ant-pagination-item-active a {
+  color: #fff;
+}
+
+/* Loading States */
+.ant-spin {
+  color: #1890ff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .admin-doctor-list {
+    padding: 16px;
+  }
+
+  .stat-card {
+    margin-bottom: 16px;
+  }
+
+  .doctor-table-card .ant-table {
+    font-size: 13px;
+  }
+}
+
+/* Đẩy modal lên cao, giảm chiều rộng tối đa */
+.ant-modal {
+  top: 100px !important;
+}
+.ant-modal-content {
+  max-width: 600px;
+  border-radius: 8px;
+}
+
+/* Biến form trong modal thành grid 2 cột */
+.ant-modal-body .ant-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 12px;
+  /* Giảm padding để gọn hơn */
+  padding: 0;
+}
+
+/* Mỗi form-item thu gọn margin */
+.ant-modal-body .ant-form-item {
+  margin-bottom: 8px;
+}
+
+/* Các mục Description, Avatar và nút hành động chiếm full width */
+.ant-modal-body .ant-form-item:nth-child(n + 7) {
+  grid-column: 1 / -1;
+}
+
+/* Căn 2 nút Cancel/Create về phía phải */
+.ant-modal-body .ant-form-item:last-child {
+  justify-self: end;
+}
+
+/* Chỉnh label nhỏ gọn hơn */
+.ant-modal-body .ant-form-item-label > label {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Chỉnh input và select bo góc, cao thấp phù hợp */
+.ant-modal-body .ant-input,
+.ant-modal-body .ant-input-number,
+.ant-modal-body .ant-select-selector,
+.ant-modal-body .ant-input-password {
+  border-radius: 4px;
+  height: 36px;
+}
+
+.doctor-link:hover {
+  color: #096dd9;
+  text-decoration: underline;
+}
+
+.cancel-button-doctor-admin {
+  background-color: #f5f5f5 !important;
+  color: #000 !important;
+  border: 1px solid #575757 !important;
+}
