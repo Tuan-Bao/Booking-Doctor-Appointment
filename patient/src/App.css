@@ -1,0 +1,11 @@
+.app {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app {
+    margin-left: 10%;
+    margin-right: 10%;
+  }
+}
