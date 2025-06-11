@@ -57,13 +57,13 @@ export const bookAppointmentOnline = async (
 
     let compareTime = new Date(appointment_datetime);
     let now = new Date();
-    let minimumAllowedTime = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+    let minimumAllowedTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
     const minimumTimestamp = minimumAllowedTime.getTime();
     const compareTimestamp = compareTime.getTime();
 
     if (compareTimestamp <= minimumTimestamp) {
       throw new BadRequestError(
-        "Appointments must be booked at least 12 hours in advance."
+        "Appointments must be booked at least 2 hours in advance."
       );
     }
 

@@ -24,7 +24,12 @@ export const verifyEmail = async (req, res, next) => {
   try {
     const { email, otp_code } = req.query;
     const result = await patientService.verifyEmail(email, otp_code);
-    return res.status(StatusCodes.OK).json(result);
+    // return res.status(StatusCodes.OK).json(result);
+    if (result.message === "Success") {
+      return res.redirect("http://localhost:5173/login");
+    } else {
+      return res.status(StatusCodes.BAD_REQUEST).json(result);
+    }
   } catch (error) {
     next(error);
   }
