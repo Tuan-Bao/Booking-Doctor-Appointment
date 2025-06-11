@@ -1,0 +1,206 @@
+.appointment-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.appointment-doctor-info {
+  margin-bottom: 2rem;
+}
+
+.appointment-info-card {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-doctor-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #5e79ff;
+}
+
+.appointment-info-details {
+  flex: 1;
+}
+
+.appointment-info-details h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.appointment-info-details p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.appointment-scheduler {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-date-selector {
+  margin-bottom: 2rem;
+}
+
+.appointment-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.date-cell {
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.date-cell.available:hover {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.date-cell.unavailable {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.date-cell.selected {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.appointment-day {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.appointment-date {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.appointment-time-selector {
+  margin-bottom: 2rem;
+}
+
+.appointment-time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.appointment-time-slot {
+  text-align: center;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.appointment-time-slot.available:hover {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.appointment-time-slot.unavailable {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.appointment-time-slot.selected {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.appointment-summary {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.appointment-book-button {
+  background: #1890ff;
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
+}
+
+.appointment-book-button:hover {
+  background: #40a9ff;
+}
+
+.appointment-loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.appointment-error {
+  text-align: center;
+  padding: 2rem;
+  color: #ff4d4f;
+  font-size: 1.2rem;
+}
+
+.appointment-reason {
+  margin: 1.5rem 0;
+}
+
+.appointment-reason label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.appointment-reason textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.3s ease;
+}
+
+.appointment-reason textarea:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.appointment-reason textarea::placeholder {
+  color: #999;
+}
+
+.appointment-book-button:disabled {
+  background: #d9d9d9;
+  cursor: not-allowed;
+}

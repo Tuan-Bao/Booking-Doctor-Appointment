@@ -1,0 +1,95 @@
+.pay-appointment-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pay-appointment-back-button {
+  margin-bottom: 1rem;
+  padding-left: 0;
+}
+
+.pay-appointment-payment-card,
+.pay-appointment-details-card {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  height: 100%;
+}
+
+.pay-appointment-details-title {
+  text-align: center;
+  margin-bottom: 0px !important;
+}
+
+.pay-appointment-payment-title {
+  text-align: center;
+  margin-bottom: 1.5rem !important;
+}
+
+.pay-appointment-payment-summary {
+  padding: 1rem;
+}
+
+.pay-appointment-payment-amount {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.pay-appointment-amount {
+  color: #1890ff;
+  margin-top: 0.5rem !important;
+}
+
+.pay-appointment-payment-method {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.pay-appointment-momo-logo {
+  margin-top: 1rem;
+}
+
+.pay-appointment-momo-logo img {
+  height: 40px;
+  object-fit: contain;
+}
+
+.pay-appointment-button {
+  margin-top: 1.5rem;
+  height: 48px;
+  font-size: 1.1rem;
+}
+
+.pay-appointment-details {
+  padding: 1rem;
+}
+
+.pay-appointment-section {
+  margin-bottom: 1.5rem;
+}
+
+.pay-appointment-section .ant-typography {
+  margin-bottom: 1rem !important;
+}
+
+.pay-appointment-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .pay-appointment-container {
+    padding: 1rem;
+  }
+
+  .pay-appointment-payment-summary,
+  .pay-appointment-details {
+    padding: 0.5rem;
+  }
+
+  .pay-appointment-payment-card {
+    margin-bottom: 1rem;
+  }
+}

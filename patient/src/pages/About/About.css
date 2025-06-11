@@ -1,0 +1,113 @@
+.about-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 18px 40px 18px;
+}
+
+.about-title {
+  text-align: center;
+  font-size: 2rem;
+  padding-top: 32px;
+  color: #6b7280;
+  font-weight: 500;
+}
+.about-title-highlight {
+  color: #181c32;
+  font-weight: 600;
+}
+.about-title p {
+  margin: 10px auto;
+}
+.about-main {
+  margin: 48px 0 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  margin-top: 10px;
+}
+@media (min-width: 768px) {
+  .about-main {
+    flex-direction: row;
+    gap: 48px;
+    align-items: flex-start;
+  }
+}
+.about-img {
+  width: 100%;
+  margin-top: 20px;
+  max-width: 300px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 16px rgba(85, 104, 254, 0.08);
+}
+.about-desc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  color: #5a5a5a;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.about-vision-desc {
+  margin-top: 4px;
+}
+.about-vision {
+  color: #181c32;
+  font-size: 1.08rem;
+  margin: 10px 0 0 0;
+}
+
+.about-why-title {
+  text-align: center;
+  font-size: 1.4rem;
+  margin: 80px 0 18px 0;
+  color: #181c32;
+  font-weight: 500;
+}
+.about-why-highlight {
+  color: #5568fe;
+  font-weight: 600;
+}
+
+.about-why-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 60px;
+}
+@media (min-width: 900px) {
+  .about-why-list {
+    flex-direction: row;
+    gap: 28px;
+  }
+}
+.about-why-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 28px 24px;
+  background: #fff;
+  color: #5a5a5a;
+  font-size: 1rem;
+  font-weight: 400;
+  box-shadow: 0 2px 12px rgba(85, 104, 254, 0.04);
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.about-why-item:hover {
+  background: #5568fe;
+  color: #fff;
+}
+.about-why-item b {
+  color: #181c32;
+  font-size: 1.08rem;
+}
+.about-why-item:hover b {
+  color: #fff;
+}

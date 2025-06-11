@@ -1,0 +1,56 @@
+.payments-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.payments-card {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.payments-table {
+  margin-top: 24px;
+}
+
+.payment-doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-doctor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.payment-doctor-info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-doctor-name {
+  font-weight: 500;
+  color: #262626;
+}
+
+.payment-doctor-specialization {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .payments-container {
+    padding: 16px;
+  }
+
+  .payment-doctor-info {
+    gap: 8px;
+  }
+
+  .payment-doctor-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
