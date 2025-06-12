@@ -16,6 +16,7 @@ import {
   Descriptions,
   Spin,
   Select,
+  Button,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -29,9 +30,11 @@ import {
   MedicineBoxOutlined,
   StarOutlined,
   DollarOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 import "./Appointments.css";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -57,6 +60,7 @@ const Appointments = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const navigate = useNavigate();
 
   const statusConfig = {
     scheduled: {
@@ -86,6 +90,8 @@ const Appointments = () => {
       title: "Patient",
       dataIndex: ["patient", "user", "username"],
       key: "patient",
+      width: 220,
+      align: "left",
       render: (text, record) => (
         <Space>
           <img
@@ -94,8 +100,18 @@ const Appointments = () => {
             }
             alt="Patient"
             className="patient-avatar"
+            style={{ width: 36, height: 36, borderRadius: "50%" }}
           />
-          <span>{text || "Unknown"}</span>
+          <span
+            style={{ color: "#1677ff", cursor: "pointer", fontWeight: 500 }}
+            onClick={() => {
+              if (record.patient?.user?.user_id) {
+                navigate(`/admin/patient/${record.patient.user.user_id}`);
+              }
+            }}
+          >
+            {text || "Unknown"}
+          </span>
         </Space>
       ),
     },
@@ -103,6 +119,8 @@ const Appointments = () => {
       title: "Date",
       dataIndex: "checkin_time",
       key: "checkin_time",
+      width: 140,
+      align: "center",
       sorter: (a, b) => {
         const dateA = moment(a.checkin_time, "HH:mm:ss D/M/YYYY");
         const dateB = moment(b.checkin_time, "HH:mm:ss D/M/YYYY");
@@ -118,16 +136,28 @@ const Appointments = () => {
       title: "Doctor",
       dataIndex: ["doctor", "user", "username"],
       key: "doctor",
+      width: 160,
+      align: "center",
       render: (text, record) => (
         <Space>
           <img
             src={
               record.doctor?.user?.avatar || "https://via.placeholder.com/40"
             }
-            alt="Patient"
+            alt="Doctor"
             className="doctor-avatar"
+            style={{ width: 36, height: 36, borderRadius: "50%" }}
           />
-          <span>{text || "Unknown"}</span>
+          <span
+            style={{ color: "#1677ff", cursor: "pointer", fontWeight: 500 }}
+            onClick={() => {
+              if (record.doctor?.user?.user_id) {
+                navigate(`/admin/doctor/${record.doctor.user.user_id}`);
+              }
+            }}
+          >
+            {text || "Unknown"}
+          </span>
         </Space>
       ),
     },
@@ -135,6 +165,8 @@ const Appointments = () => {
       title: "Specialization",
       dataIndex: ["doctor", "specialization", "name"],
       key: "specialization",
+      width: 140,
+      align: "center",
       render: (text, record) => (
         <span>{record.doctor?.specialization?.name || "N/A"}</span>
       ),
@@ -143,12 +175,16 @@ const Appointments = () => {
       title: "Reason",
       dataIndex: "reason",
       key: "reason",
+      width: 160,
+      align: "center",
       render: (text) => `${text || "N/A"}`,
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      width: 120,
+      align: "center",
       render: (status) => (
         <Tag
           icon={statusConfig[status].icon}
@@ -159,22 +195,62 @@ const Appointments = () => {
       ),
     },
     {
+      title: "Fees",
+      dataIndex: "fees",
+      key: "fees",
+      width: 100,
+      align: "center",
+      render: (fees) => `$${fees}`,
+    },
+    {
+      title: "Payment",
+      dataIndex: ["payment", "status"],
+      key: "payment",
+      width: 110,
+      align: "center",
+      render: (status) => (
+        <Tag color={status && status === "paid" ? "green" : "red"}>
+          {status && status === "paid" ? "Paid" : "Unpaid"}
+        </Tag>
+      ),
+    },
+    {
       title: "Actions",
       key: "actions",
-      width: 100,
+      width: 180,
+      align: "center",
       render: (_, record) => (
-        <div className="action-dropdown">
-          <MoreOutlined />
-          <div className="action-menu">
-            <div
-              className="action-menu-item"
-              onClick={() => handleViewDetails(record.appointment_id)}
-            >
-              <FileTextOutlined />
-              <span>Appointment Details</span>
-            </div>
-          </div>
-        </div>
+        <Space>
+          <Button
+            type="primary"
+            icon={<FileTextOutlined />}
+            onClick={() => handleViewDetails(record.appointment_id)}
+          >
+            View
+          </Button>
+          {record.status === "completed" &&
+            record.payment &&
+            record.payment.status === "pending" && (
+              <Button
+                type="primary"
+                icon={<DollarOutlined />}
+                onClick={() => handlePayment(record.appointment_id)}
+              >
+                Pay
+              </Button>
+            )}
+          {record.status === "scheduled" &&
+            record.arrival_status === "pending" && (
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                style={{ fontSize: 14, paddingLeft: 10, paddingRight: 10 }}
+                onClick={() => handleCheckIn(record.appointment_id)}
+              >
+                Check In
+              </Button>
+            )}
+        </Space>
       ),
     },
   ];
@@ -221,6 +297,42 @@ const Appointments = () => {
       console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayment = async (appointment_id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/payment/offline/${appointment_id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Payment successful");
+      fetchPatientAppointments(); // Refresh the list
+    } catch (err) {
+      message.error(err.response?.data?.message || "Payment failed");
+      console.log(err);
+    }
+  };
+
+  const handleCheckIn = async (appointment_id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/admin/check_in_appointment/${appointment_id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Check in successful");
+      fetchPatientAppointments(); // Refresh the list
+    } catch (err) {
+      message.error(err.response?.data?.message || "Check in failed");
+      console.log(err);
     }
   };
 

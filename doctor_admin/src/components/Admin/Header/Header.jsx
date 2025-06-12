@@ -15,11 +15,15 @@ const Header = () => {
   return (
     <header className="admin-header">
       <div className="header-left">
-        <div className="logo-container">
-          <img src={assets.logo} alt="Prescripto" className="logo" />
-          <span className="logo-text">Prescripto</span>
-        </div>
-        <div className="admin-tag">Admin</div>
+        <div 
+        className="logo-container"
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate("/admin/dashboard")}
+        >
+        <img src={assets.logo} alt="Prescripto" className="logo" />
+        <span className="logo-text">Prescripto</span>
+      </div>
+      <div className="admin-tag">Admin</div>
       </div>
 
       <div className="header-right">

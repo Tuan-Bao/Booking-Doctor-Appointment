@@ -12,7 +12,6 @@ import "./NavBar.css";
 const NavBar = () => {
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState(location.pathname);
-
   const menuItems = [
     {
       key: "/admin/dashboard",
@@ -39,18 +38,18 @@ const NavBar = () => {
       icon: <TeamOutlined />,
       label: "Patients List",
     },
+    {
+      key: "/admin/schedule-manager",
+      icon: <CalendarOutlined />,
+      label: "Schedule Manager",
+    },
   ];
-
-  const handleMenuClick = (e) => {
-    setSelectedKey(e.key);
-  };
 
   return (
     <div className="admin-navbar">
       <Menu
         mode="inline"
-        selectedKeys={[selectedKey]}
-        onClick={handleMenuClick}
+        selectedKeys={[location.pathname]}
         items={menuItems.map((item) => ({
           ...item,
           label: <Link to={item.key}>{item.label}</Link>,

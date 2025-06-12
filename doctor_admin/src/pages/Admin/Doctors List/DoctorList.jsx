@@ -30,6 +30,7 @@ import {
   PlusOutlined,
   UploadOutlined,
   DeleteOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import "./DoctorList.css";
@@ -41,6 +42,8 @@ const AdminDoctorList = () => {
   const { API_URL } = useAppContext();
   const navigate = useNavigate();
 
+  const [searchText, setSearchText] = useState("");
+  const [searchCriteria, setSearchCriteria] = useState("username");
   const [specializations, setSpecializations] = useState([]);
   const [selectedSpec, setSelectedSpec] = useState(null);
   const [doctors, setDoctors] = useState([]);
@@ -179,6 +182,21 @@ const AdminDoctorList = () => {
       setLoadingDoctors(false);
     }
   };
+
+  const filteredDoctors = doctors.filter((doctor) => {
+    if (!searchText) return true;
+    const value = searchText.toLowerCase();
+    switch (searchCriteria) {
+      case "username":
+        return doctor.user?.username?.toLowerCase().includes(value);
+      case "email":
+        return doctor.user?.email?.toLowerCase().includes(value);
+      case "degree":
+        return doctor.degree?.toLowerCase().includes(value);
+      default:
+        return true;
+    }
+  });
 
   // 1. Lấy list chuyên khoa
   useEffect(() => {
@@ -383,6 +401,30 @@ const AdminDoctorList = () => {
 
       <Card className="doctor-table-card">
         <div className="doctor-table-header">
+          {/* Thanh tìm kiếm */}
+          <Card className="doctor-search-card" style={{ marginBottom: 16 }}>
+            <Space>
+              <Select
+                defaultValue="username"
+                value={searchCriteria}
+                style={{ width: 120 }}
+                onChange={setSearchCriteria}
+              >
+                <Select.Option value="username">Name</Select.Option>
+                <Select.Option value="email">Email</Select.Option>
+                <Select.Option value="degree">Degree</Select.Option>
+              </Select>
+              <Input
+                placeholder={`Search by ${searchCriteria}`}
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+                style={{ width: 240 }}
+                className="search-input"
+              />
+            </Space>
+          </Card>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -395,7 +437,7 @@ const AdminDoctorList = () => {
         <Table
           rowKey="doctor_id"
           columns={columns}
-          dataSource={doctors}
+          dataSource={filteredDoctors}
           loading={loadingDoctors}
           // pagination={{
           //   pageSize: 10,

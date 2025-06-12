@@ -1,0 +1,397 @@
+.schedule-manager {
+  padding: 24px;
+  margin: 0 auto;
+  background: #f5f7fa;
+  height: calc(100vh - 48px);
+  overflow: auto;
+  max-width: none; /* Remove max-width restriction */
+  width: 100%;
+}
+
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 16px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.week-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.current-week {
+  min-width: 200px;
+  font-weight: 500;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.filters-section {
+  margin-bottom: 24px;
+}
+
+.schedule-grid {
+  overflow: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: 24px 0;
+  padding: 16px;
+  max-width: 100%;
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: max-content; /* Ensure table doesn't shrink */
+}
+
+.schedule-table th,
+.schedule-table td {
+  border: 1px solid #f0f0f0;
+  padding: 12px;
+  text-align: center;
+}
+
+.schedule-table th {
+  background-color: #fafafa;
+  font-weight: 500;
+}
+
+.schedule-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+  min-width: 180px;
+}
+
+.schedule-table tr:hover td {
+  background-color: #fafafa;
+}
+
+.doctor-info {
+  text-align: left !important;
+  min-width: 200px;
+}
+
+.doctor-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.doctor-id {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.doctor-spec {
+  color: #1890ff;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.editable-cell {
+  padding: 0 !important;
+  height: 120px;
+}
+
+.shift-cell {
+  padding: 8px;
+  border-radius: 4px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.shift-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.empty-shift {
+  background-color: #fafafa;
+  border: 1px dashed #d9d9d9;
+}
+
+.shift-morning {
+  background-color: #1890ff;
+  color: white;
+}
+
+.shift-afternoon {
+  background-color: #fffbe6;
+}
+
+.shift-custom {
+  background-color: #f0f0f0;
+}
+
+.shift-time {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.editable-cell {
+  position: relative;
+}
+
+.editable-cell:hover .edit-button {
+  opacity: 1;
+}
+
+.edit-button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.totals-row td {
+  background-color: #fafafa;
+  font-weight: 500;
+}
+
+.selection-controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-width: 400px;
+  width: 100%;
+  border: 1px solid #f0f0f0;
+}
+
+.selection-controls .ant-typography {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 4px 8px;
+  background-color: #e6f7ff;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.shift-popover {
+  min-width: 300px;
+}
+
+.shift-form .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.shift-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.shift-checkbox {
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid #d9d9d9;
+  text-align: center;
+  font-size: 13px;
+}
+
+.shift-checkbox:hover {
+  border-color: #1890ff;
+}
+
+.shift-checkbox {
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid #d9d9d9;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.shift-checkbox.morning:hover {
+  border-color: #1890ff;
+}
+
+.shift-checkbox.afternoon:hover {
+  border-color: #faad14;
+}
+
+.shift-checkbox.morning.active {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.shift-checkbox.afternoon.active {
+  background-color: #faad14;
+  color: white;
+  border-color: #faad14;
+}
+
+.custom-shift {
+  background-color: #f5f5f5;
+  padding: 6px 8px;
+  margin: 4px 0;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+  border: 1px dashed #d9d9d9;
+}
+
+.doctor-department {
+  font-size: 12px;
+  color: #666;
+  margin-top: auto;
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px dashed #f0f0f0;
+}
+
+.shift-cell.selected {
+  background-color: #e6f7ff;
+  border: 2px solid #1890ff;
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
+}
+
+.schedule-summary {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.summary-table {
+  margin-top: 16px;
+}
+
+.summary-table th,
+.summary-table td {
+  text-align: center !important;
+  padding: 12px !important;
+}
+
+.summary-table .doctor-info {
+  text-align: left !important;
+  min-width: 200px;
+}
+
+.summary-table .total-hours {
+  font-weight: 500;
+  background-color: #f0f5ff;
+}
+
+.summary-table .day-hours {
+  min-width: 100px;
+  background-color: #fafafa;
+}
+
+.summary-table .doctor-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.summary-table .doctor-spec {
+  color: #1890ff;
+  font-size: 12px;
+}
+
+.department-summary {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.department-table {
+  margin-top: 16px;
+}
+
+.department-table th,
+.department-table td {
+  text-align: left !important;
+  padding: 12px !important;
+  vertical-align: top;
+}
+
+.department-table .department-info {
+  min-width: 200px;
+  background-color: #fafafa;
+}
+
+.department-table .department-name {
+  font-weight: 500;
+  color: #1890ff;
+}
+
+.department-cell {
+  min-width: 180px;
+}
+
+.time-slot {
+  margin: 4px 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.time-slot.morning {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  color: #0050b3;
+}
+
+.time-slot.afternoon {
+  background-color: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #873800;
+}
+
+@media (max-width: 1200px) {
+  .schedule-grid {
+    overflow-x: auto;
+  }
+  
+  .schedule-table td,
+  .schedule-table th {
+    min-width: 140px;
+  }
+  
+  .doctor-info {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .week-navigation {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .header-buttons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

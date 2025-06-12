@@ -17,6 +17,7 @@ import AdminPatientList from "./pages/Admin/Patients List/PatientList";
 import AdminSpecializations from "./pages/Admin/Specializations/Specializations";
 import AdminDoctorDetails from "./pages/Admin/DoctorDetails/AdminDoctorDetails";
 import AdminPatientDetails from "./pages/Admin/PatientDetails/AdminPatientDetails";
+import ScheduleManager from "./pages/Admin/Schedule_Manager/ScheduleManager";
 
 import DoctorHeader from "./components/Doctor/Header/Header";
 import DoctorNavBar from "./components/Doctor/NavBar/NavBar";
@@ -25,6 +26,8 @@ import DoctorAppointments from "./pages/Doctor/Appointments/Appointments";
 import DoctorProfile from "./pages/Doctor/Profile/Profile";
 import DoctorSchedule from "./pages/Doctor/Schedule/Schedule";
 import DoctorPatientDetails from "./pages/Doctor/Patients/PatientDetails";
+
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 
 const PrivateRoute = ({ children, role }) => {
   const storedRole = localStorage.getItem("role");
@@ -42,6 +45,8 @@ const PrivateRoute = ({ children, role }) => {
 
   return (
     <>
+      <ScrollToTop />
+
       {role === "admin" && (
         <>
           <AdminHeader />
@@ -156,9 +161,7 @@ function App() {
                 <AdminDoctorDetails />
               </PrivateRoute>
             }
-          />
-
-          <Route
+          />          <Route
             path="/admin/patient/:user_id"
             element={
               <PrivateRoute role="admin">
@@ -166,6 +169,16 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          <Route
+            path="/admin/schedule-manager"
+            element={
+              <PrivateRoute role="admin">
+                <ScheduleManager />
+              </PrivateRoute>
+            }
+          />
+          
           <Route
             path="/doctor/dashboard"
             element={
