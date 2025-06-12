@@ -1,12 +1,47 @@
 // import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 // import { AppContext } from '../context/AppContext';
-import { doctors } from "../../assets/assets";
+// import { doctors } from "../../assets/assets";
 import "./TopDoctors.css";
+import axios from "axios";
+import { useAppContext } from "../../context/AppContext";
+import { useState, useEffect } from "react";
 
 const TopDoctors = () => {
   const navigate = useNavigate();
-  // const { doctors } = useContext(AppContext);
+  const { API_URL } = useAppContext();
+  const [topDoctors, setTopDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTopDoctors = async () => {
+    setLoading(true);
+
+    try {
+      const res = await axios.get(`${API_URL}/doctor/top`);
+      setTopDoctors(res.data.doctors);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTopDoctors();
+  }, []);
+
+  useEffect(() => {
+    console.log(topDoctors);
+  }, [topDoctors]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="top-doctors">
@@ -16,22 +51,22 @@ const TopDoctors = () => {
       </p>
 
       <div className="top-doctors__grid">
-        {doctors.slice(0, 10).map((item) => (
+        {topDoctors.map((item) => (
           <div
             key={item._id}
             className="top-doctors__card"
             onClick={() => {
-              navigate(`/appointment/${item._id}`);
+              navigate(`/appointment/${item.user.user_id}`);
               window.scrollTo(0, 0);
             }}
           >
             <img
               className="top-doctors__img"
-              src={item.image}
-              alt={item.name}
+              src={item.user.avatar}
+              alt={item.user.username}
             />
             <div className="top-doctors__card-content">
-              <div
+              {/* <div
                 className={`top-doctors__status ${
                   item.available
                     ? "top-doctors__status--available"
@@ -46,10 +81,12 @@ const TopDoctors = () => {
                   }`}
                 />
                 <span>{item.available ? "Available" : "Not Available"}</span>
-              </div>
+              </div> */}
 
-              <p className="top-doctors__name">{item.name}</p>
-              <p className="top-doctors__speciality">{item.speciality}</p>
+              <p className="top-doctors__name">{item.user.username}</p>
+              <p className="top-doctors__speciality">
+                {item.specialization.name}
+              </p>
             </div>
           </div>
         ))}

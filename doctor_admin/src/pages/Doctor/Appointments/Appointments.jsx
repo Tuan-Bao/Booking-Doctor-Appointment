@@ -258,6 +258,88 @@ const Appointments = () => {
     }
   };
 
+  const handleAddMedicalRecordAndPrescription = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue([
+        "diagnosis",
+        "treatment",
+        "notes",
+        "medicine_details",
+      ]);
+
+      // Add medical record
+      const medicalRecordData = {
+        appointment_id: selectedAppointment,
+        diagnosis: values.diagnosis,
+        treatment: values.treatment,
+        notes: values.notes,
+      };
+      await axios.post(`${API_URL}/medical_record/add`, medicalRecordData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Add prescription
+      const prescriptionData = {
+        appointment_id: selectedAppointment,
+        medicine_details: values.medicine_details,
+      };
+      await axios.post(`${API_URL}/prescription/add`, prescriptionData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      message.success("Medical record and prescription added successfully");
+      fetchAppointments();
+      handleModalCancel();
+    } catch (error) {
+      message.error("Failed to add medical record and prescription");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleUpdateMedicalRecord = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue(["diagnosis", "treatment", "notes"]);
+      await axios.patch(
+        `${API_URL}/medical_record/update/${appointmentDetails.medical_record.record_id}`,
+        values,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Medical record updated successfully");
+      fetchAppointments();
+    } catch (error) {
+      message.error("Failed to update medical record");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleUpdatePrescription = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue(["medicine_details"]);
+      await axios.patch(
+        `${API_URL}/prescription/update/${appointmentDetails.prescription.prescription_id}`,
+        values,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Prescription updated successfully");
+      fetchAppointments();
+    } catch (error) {
+      message.error("Failed to update prescription");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   return (
     <div className="appointments-container">
       <Title level={2}>Today Appointments</Title>
@@ -333,7 +415,7 @@ const Appointments = () => {
                     message.error("Failed to update status");
                   } finally {
                     setModalLoading(false);
-                    handleModalCancel();
+                    // handleModalCancel();
                   }
                 }}
               >
@@ -369,69 +451,11 @@ const Appointments = () => {
               <Input.TextArea rows={4} placeholder="Enter notes ..." />
             </Form.Item>
             <div className="modal-btn-group">
-              <Button
-                type="primary"
-                onClick={async () => {
-                  try {
-                    setModalLoading(true);
-                    const token = localStorage.getItem("token");
-                    let values = form.getFieldsValue([
-                      "diagnosis",
-                      "treatment",
-                      "notes",
-                    ]);
-                    values = {
-                      appointment_id: selectedAppointment,
-                      diagnosis: values.diagnosis,
-                      treatment: values.treatment,
-                      notes: values.notes,
-                    };
-                    await axios.post(`${API_URL}/medical_record/add`, values, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    // message.success("Medical record added");
-                    fetchAppointments();
-                  } catch {
-                    // message.error("Failed to add medical record");
-                    console.log("Failed to add medical record");
-                  } finally {
-                    setModalLoading(false);
-                    handleModalCancel();
-                  }
-                }}
-                disabled={!!appointmentDetails.medical_record}
-              >
-                Add
-              </Button>
-              <Button
-                type="primary"
-                onClick={async () => {
-                  try {
-                    setModalLoading(true);
-                    const token = localStorage.getItem("token");
-                    const values = form.getFieldsValue([
-                      "diagnosis",
-                      "treatment",
-                      "notes",
-                    ]);
-                    await axios.patch(
-                      `${API_URL}/medical_record/update/${appointmentDetails.medical_record.record_id}`,
-                      values,
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    // message.success("Medical record updated");
-                    fetchAppointments();
-                  } catch {
-                    // message.error("Failed to update medical record");
-                    console.log("Failed to update medical record");
-                  } finally {
-                    setModalLoading(false);
-                  }
-                }}
-                disabled={!appointmentDetails.medical_record}
-              >
-                Update
-              </Button>
+              {appointmentDetails.medical_record && (
+                <Button type="primary" onClick={handleUpdateMedicalRecord}>
+                  Update
+                </Button>
+              )}
             </div>
             <Divider />
             {/* PRESCRIPTION */}
@@ -449,59 +473,25 @@ const Appointments = () => {
               />
             </Form.Item>
             <div className="modal-btn-group">
-              <Button
-                type="primary"
-                onClick={async () => {
-                  try {
-                    setModalLoading(true);
-                    const token = localStorage.getItem("token");
-                    let values = form.getFieldsValue(["medicine_details"]);
-                    values = {
-                      appointment_id: selectedAppointment,
-                      medicine_details: values.medicine_details,
-                    };
-                    await axios.post(`${API_URL}/prescription/add`, values, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    // message.success("Prescription added");
-                    fetchAppointments();
-                  } catch {
-                    // message.error("Failed to add prescription");
-                    console.log("Failed to add prescription");
-                  } finally {
-                    setModalLoading(false);
-                    handleModalCancel();
-                  }
-                }}
-                disabled={!!appointmentDetails.prescription}
-              >
-                Add
-              </Button>
-              <Button
-                type="primary"
-                onClick={async () => {
-                  try {
-                    setModalLoading(true);
-                    const token = localStorage.getItem("token");
-                    const values = form.getFieldsValue(["medicine_details"]);
-                    await axios.patch(
-                      `${API_URL}/prescription/update/${appointmentDetails.prescription.prescription_id}`,
-                      values,
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    // message.success("Prescription updated");
-                    fetchAppointments();
-                  } catch {
-                    // message.error("Failed to update prescription");
-                    console.log("Failed to update prescription");
-                  } finally {
-                    setModalLoading(false);
-                  }
-                }}
-                disabled={!appointmentDetails.prescription}
-              >
-                Update
-              </Button>
+              {appointmentDetails.prescription && (
+                <Button type="primary" onClick={handleUpdatePrescription}>
+                  Update
+                </Button>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="modal-btn-group">
+              {!appointmentDetails.medical_record &&
+                !appointmentDetails.prescription && (
+                  <Button
+                    type="primary"
+                    onClick={handleAddMedicalRecordAndPrescription}
+                    loading={modalLoading}
+                  >
+                    Add Medical Record & Prescription
+                  </Button>
+                )}
             </div>
           </Form>
         )}

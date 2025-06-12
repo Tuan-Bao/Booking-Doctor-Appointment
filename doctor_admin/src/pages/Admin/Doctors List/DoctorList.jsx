@@ -335,7 +335,7 @@ const AdminDoctorList = () => {
           <Card className="stat-card">
             <Statistic
               title="Average Rating"
-              value={stats.avgRating}
+              value={stats.avgRating.toFixed(2)}
               prefix={
                 <StarOutlined
                   className="stat-icon"
@@ -432,7 +432,7 @@ const AdminDoctorList = () => {
               label="Password"
               rules={[{ required: true }]}
             >
-              <Input.Password />
+              <Input.Password className="admin-doctor-list-password-form-item" />
             </Form.Item>
 
             <Form.Item

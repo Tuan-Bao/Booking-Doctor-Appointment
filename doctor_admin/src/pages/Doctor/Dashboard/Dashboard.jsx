@@ -2,11 +2,34 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import axios from "axios";
 import { format, parse } from "date-fns";
+import { Button } from "antd";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Calendar } from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useAppContext } from "../../../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  Typography,
+  Space,
+  Spin,
+  Modal,
+  Form,
+  Input,
+  Select,
+  message,
+  Divider,
+} from "antd";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
+
+const { Title } = Typography;
+const { Option } = Select;
 
 const Dashboard = () => {
   const { API_URL } = useAppContext();
@@ -23,13 +46,34 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  // const [date, setDate] = useState(new Date());
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [appointmentDetails, setAppointmentDetails] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [form] = Form.useForm();
 
-  // Patient statistics data for pie chart
-  // const [patientData, setPatientData] = useState([
-  //   { name: "New Patients", value: 0, color: "#3A59D1" },
-  //   { name: "Old Patients", value: 0, color: "#7AC6D2" },
-  // ]);
+  const statusConfig = {
+    scheduled: {
+      color: "processing",
+      icon: <ClockCircleOutlined />,
+      label: "Scheduled",
+    },
+    completed: {
+      color: "success",
+      icon: <CheckCircleOutlined />,
+      label: "Completed",
+    },
+    cancelled: {
+      color: "error",
+      icon: <CloseCircleOutlined />,
+      label: "Cancelled",
+    },
+    no_show: {
+      color: "default",
+      icon: <UserOutlined />,
+      label: "No Show",
+    },
+  };
 
   const handlePatientDetails = (user_id) => {
     if (user_id) {
@@ -47,200 +91,277 @@ const Dashboard = () => {
     );
   }
 
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      // Fetch doctor profile and appointments
+      const [profileResponse, feedbackResponse] = await Promise.all([
+        axios.get(`${API_URL}/doctor/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/doctor/feedback`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const { user } = profileResponse.data;
+      const { appointments: feedbackAppointments } = feedbackResponse.data;
+
+      // Process feedback data
+      const feedbacksWithComments = feedbackAppointments.filter(
+        (appt) => appt.feedback
+      );
+      const ratingCounts = {
+        5: 0,
+        4: 0,
+        3: 0,
+        2: 0,
+        1: 0,
+      };
+
+      feedbacksWithComments.forEach((appt) => {
+        if (appt.feedback) {
+          ratingCounts[appt.feedback.rating]++;
+        }
+      });
+
+      setDashboardData((prev) => ({
+        ...prev,
+        averageRating: user.doctor.rating,
+        totalReviews: feedbacksWithComments.length,
+        ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
+          rating: parseInt(rating),
+          count,
+          percentage:
+            feedbacksWithComments.length > 0
+              ? Math.round((count / feedbacksWithComments.length) * 100)
+              : 0,
+        })),
+      }));
+
+      // Assume we have an endpoint to get doctor profile with today's appointments
+      const response = await axios.get(`${API_URL}/doctor/appointments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // console.log(response.data);
+      // Extract relevant data (this will depend on your actual API response)
+      const { appointments } = response.data;
+      const uniquePatientIds = new Set(
+        appointments.map((appt) => appt.patient?.patient_id)
+      );
+      const totalPatients = uniquePatientIds.size;
+
+      // Filter today's appointments
+      const today = new Date();
+      const todayAppointmentsList = appointments
+        .filter((appt) => {
+          const parsedDate = parse(
+            appt.checkin_time,
+            "HH:mm:ss d/M/yyyy",
+            new Date()
+          );
+          return (
+            isSameDay(parsedDate, today) && appt.status === "scheduled"
+            // && parsedDate >= new Date()
+          );
+        })
+        .sort((a, b) => {
+          const dateA = parse(a.checkin_time, "HH:mm:ss d/M/yyyy", new Date());
+          const dateB = parse(b.checkin_time, "HH:mm:ss d/M/yyyy", new Date());
+          return dateA - dateB; // ASC (tăng dần)
+        });
+
+      // Find next patient
+      const nextPatient = todayAppointmentsList.find((appt) => {
+        // const apptDate = parse(
+        //   appt.checkin_time,
+        //   "HH:mm:ss d/M/yyyy",
+        //   new Date()
+        // );
+        return appt.status === "scheduled";
+        // && apptDate > new Date()
+      });
+
+      const todayPatients = new Set(
+        todayAppointmentsList.map((appt) => appt.patient?.patient_id)
+      ).size;
+
+      // Đếm số lần mỗi patient_id xuất hiện
+      const patientVisitCount = {};
+
+      appointments.forEach((appt) => {
+        const patientId = appt.patient?.patient_id;
+        if (patientId) {
+          patientVisitCount[patientId] =
+            (patientVisitCount[patientId] || 0) + 1;
+        }
+      });
+
+      // Đếm số bệnh nhân mới và cũ
+      // let newPatients = 0;
+      // let oldPatients = 0;
+
+      // Object.values(patientVisitCount).forEach((count) => {
+      //   if (count === 1) newPatients++;
+      //   else oldPatients++;
+      // });
+
+      // Cập nhật patientData cho PieChart
+      // setPatientData([
+      //   { name: "New Patients", value: newPatients, color: "#3D90D7" },
+      //   { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
+      // ]);
+      // console.log("todayAppointmentsList: ", todayAppointmentsList);
+      setDashboardData({
+        totalPatients: totalPatients,
+        todayPatients: todayPatients,
+        todayAppointments: todayAppointmentsList.length,
+        today_appointments: todayAppointmentsList,
+        appointments: appointments,
+        nextPatient: nextPatient || null,
+        averageRating: user.doctor.rating,
+        totalReviews: feedbacksWithComments.length,
+        ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
+          rating: parseInt(rating),
+          count,
+          percentage:
+            feedbacksWithComments.length > 0
+              ? Math.round((count / feedbacksWithComments.length) * 100)
+              : 0,
+        })),
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setLoading(false);
+    }
+  };
+
   // Fetch dashboard data
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-
-        // Fetch doctor profile and appointments
-        const [profileResponse, feedbackResponse] = await Promise.all([
-          axios.get(`${API_URL}/doctor/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/doctor/feedback`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        const { user } = profileResponse.data;
-        const { appointments: feedbackAppointments } = feedbackResponse.data;
-
-        // Process feedback data
-        const feedbacksWithComments = feedbackAppointments.filter(
-          (appt) => appt.feedback
-        );
-        const ratingCounts = {
-          5: 0,
-          4: 0,
-          3: 0,
-          2: 0,
-          1: 0,
-        };
-
-        feedbacksWithComments.forEach((appt) => {
-          if (appt.feedback) {
-            ratingCounts[appt.feedback.rating]++;
-          }
-        });
-
-        setDashboardData((prev) => ({
-          ...prev,
-          averageRating: user.doctor.rating,
-          totalReviews: feedbacksWithComments.length,
-          ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
-            rating: parseInt(rating),
-            count,
-            percentage:
-              feedbacksWithComments.length > 0
-                ? Math.round((count / feedbacksWithComments.length) * 100)
-                : 0,
-          })),
-        }));
-
-        // Assume we have an endpoint to get doctor profile with today's appointments
-        const response = await axios.get(`${API_URL}/doctor/appointments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        // console.log(response.data);
-        // Extract relevant data (this will depend on your actual API response)
-        const { appointments } = response.data;
-        const uniquePatientIds = new Set(
-          appointments.map((appt) => appt.patient?.patient_id)
-        );
-        const totalPatients = uniquePatientIds.size;
-
-        // Filter today's appointments
-        const today = new Date();
-        const todayAppointmentsList = appointments
-          .filter((appt) => {
-            const parsedDate = parse(
-              appt.checkin_time,
-              "HH:mm:ss d/M/yyyy",
-              new Date()
-            );
-            return (
-              isSameDay(parsedDate, today) && appt.status === "scheduled"
-              // && parsedDate >= new Date()
-            );
-          })
-          .sort((a, b) => {
-            const dateA = parse(
-              a.checkin_time,
-              "HH:mm:ss d/M/yyyy",
-              new Date()
-            );
-            const dateB = parse(
-              b.checkin_time,
-              "HH:mm:ss d/M/yyyy",
-              new Date()
-            );
-            return dateA - dateB; // ASC (tăng dần)
-          });
-
-        // Find next patient
-        const nextPatient = todayAppointmentsList.find((appt) => {
-          // const apptDate = parse(
-          //   appt.checkin_time,
-          //   "HH:mm:ss d/M/yyyy",
-          //   new Date()
-          // );
-          return appt.status === "scheduled";
-          // && apptDate > new Date()
-        });
-
-        const todayPatients = new Set(
-          todayAppointmentsList.map((appt) => appt.patient?.patient_id)
-        ).size;
-
-        // Đếm số lần mỗi patient_id xuất hiện
-        const patientVisitCount = {};
-
-        appointments.forEach((appt) => {
-          const patientId = appt.patient?.patient_id;
-          if (patientId) {
-            patientVisitCount[patientId] =
-              (patientVisitCount[patientId] || 0) + 1;
-          }
-        });
-
-        // Đếm số bệnh nhân mới và cũ
-        // let newPatients = 0;
-        // let oldPatients = 0;
-
-        // Object.values(patientVisitCount).forEach((count) => {
-        //   if (count === 1) newPatients++;
-        //   else oldPatients++;
-        // });
-
-        // Cập nhật patientData cho PieChart
-        // setPatientData([
-        //   { name: "New Patients", value: newPatients, color: "#3D90D7" },
-        //   { name: "Old Patients", value: oldPatients, color: "#7AC6D2" },
-        // ]);
-        // console.log("todayAppointmentsList: ", todayAppointmentsList);
-        setDashboardData({
-          totalPatients: totalPatients,
-          todayPatients: todayPatients,
-          todayAppointments: todayAppointmentsList.length,
-          today_appointments: todayAppointmentsList,
-          appointments: appointments,
-          nextPatient: nextPatient || null,
-          averageRating: user.doctor.rating,
-          totalReviews: feedbacksWithComments.length,
-          ratings: Object.entries(ratingCounts).map(([rating, count]) => ({
-            rating: parseInt(rating),
-            count,
-            percentage:
-              feedbacksWithComments.length > 0
-                ? Math.round((count / feedbacksWithComments.length) * 100)
-                : 0,
-          })),
-        });
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
 
-  // Format time from datetime string (assuming format like "2023-12-21T09:30:00")
-  // const formatTime = (datetimeStr) => {
-  //   try {
-  //     const time = datetimeStr.split("T")[1].substring(0, 5);
-  //     return time.replace(":", " : ");
-  //   } catch {
-  //     return datetimeStr;
-  //   }
-  // };
+  const handleAppointmentDetails = async (appointment_id) => {
+    setModalLoading(true);
+    setModalVisible(true);
+    setSelectedAppointment(appointment_id);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${API_URL}/appointment/details/${appointment_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAppointmentDetails(res.data.appointmentDetails);
+      form.setFieldsValue({
+        status: res.data.appointmentDetails.status,
+        diagnosis: res.data.appointmentDetails.medical_record?.diagnosis || "",
+        treatment: res.data.appointmentDetails.medical_record?.treatment || "",
+        notes: res.data.appointmentDetails.medical_record?.notes || "",
+        medicine_details:
+          res.data.appointmentDetails.prescription?.medicine_details || "",
+      });
+    } catch {
+      message.error("Failed to load appointment details");
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
-  // Handle calendar tile content
-  // const tileContent = ({ date }) => {
-  //   // Check if date has appointments
-  //   const dateString = format(date, "dd/M/yyyy");
-  //   const hasAppointments = dashboardData.appointments.some((appt) =>
-  //     appt.appointment_datetime.includes(dateString)
-  //   );
+  const handleModalCancel = () => {
+    setModalVisible(false);
+    setAppointmentDetails(null);
+    setSelectedAppointment(null);
+    form.resetFields();
+  };
 
-  //   return hasAppointments ? <div className="appointment-dot"></div> : null;
-  // };
+  const handleAddMedicalRecordAndPrescription = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue([
+        "diagnosis",
+        "treatment",
+        "notes",
+        "medicine_details",
+      ]);
 
-  // const getStatusLabel = (status) => {
-  //   const statusMap = {
-  //     scheduled: "Scheduled",
-  //     cancelled: "Cancelled",
-  //     completed: "Completed",
-  //     no_show: "No Show",
-  //   };
+      // Add medical record
+      const medicalRecordData = {
+        appointment_id: selectedAppointment,
+        diagnosis: values.diagnosis,
+        treatment: values.treatment,
+        notes: values.notes,
+      };
+      await axios.post(`${API_URL}/medical_record/add`, medicalRecordData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  //   return statusMap[status] || "Unknown";
-  // };
+      // Add prescription
+      const prescriptionData = {
+        appointment_id: selectedAppointment,
+        medicine_details: values.medicine_details,
+      };
+      await axios.post(`${API_URL}/prescription/add`, prescriptionData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      message.success("Medical record and prescription added successfully");
+      fetchDashboardData();
+      handleModalCancel();
+    } catch (error) {
+      message.error("Failed to add medical record and prescription");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleUpdateMedicalRecord = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue(["diagnosis", "treatment", "notes"]);
+      await axios.patch(
+        `${API_URL}/medical_record/update/${appointmentDetails.medical_record.record_id}`,
+        values,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Medical record updated successfully");
+      fetchDashboardData();
+    } catch (error) {
+      message.error("Failed to update medical record");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleUpdatePrescription = async () => {
+    try {
+      setModalLoading(true);
+      const token = localStorage.getItem("token");
+      const values = form.getFieldsValue(["medicine_details"]);
+      await axios.patch(
+        `${API_URL}/prescription/update/${appointmentDetails.prescription.prescription_id}`,
+        values,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Prescription updated successfully");
+      fetchDashboardData();
+    } catch (error) {
+      message.error("Failed to update prescription");
+      console.error("Error:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   if (loading) {
     return <div className="loading">Loading dashboard data...</div>;
@@ -281,7 +402,7 @@ const Dashboard = () => {
             </svg>
           </div>
           <div className="card-content">
-            <h3>Today Patients</h3>
+            <h3>Number of patients to be examined</h3>
             <h2>{dashboardData.todayPatients}</h2>
             <p>{format(new Date(), "dd MMM yyyy")}</p>
           </div>
@@ -300,7 +421,7 @@ const Dashboard = () => {
             </svg>
           </div>
           <div className="card-content">
-            <h3>Today Appointments</h3>
+            <h3>Number of appointments needed to be done</h3>
             <h2>{dashboardData.todayAppointments}</h2>
             <p>{format(new Date(), "dd MMM yyyy")}</p>
           </div>
@@ -353,6 +474,7 @@ const Dashboard = () => {
               <span>Name</span>
               <span>Date</span>
               <span>Reason</span>
+              <span>Action</span>
             </div>
 
             <div className="appointment-scroll-container">
@@ -378,6 +500,16 @@ const Dashboard = () => {
                     </div>
                     <div className="appointment-reason">
                       {appointment.reason}
+                    </div>
+                    <div className="appointment-action">
+                      <Button
+                        type="primary"
+                        onClick={() =>
+                          handleAppointmentDetails(appointment.appointment_id)
+                        }
+                      >
+                        View Details
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -518,66 +650,130 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      {/* <div className="bottom-section">
-        <div className="patient-reviews">
-          <h3>Patients Review</h3>
-          <div className="rating-summary">
-            <div className="average-rating">
-              <span className="rating-number">
-                {dashboardData.averageRating.toFixed(1)}
-              </span>
-              <div className="rating-stars">
-                {[...Array(5)].map((_, index) => (
-                  <span
-                    key={index}
-                    className={`star ${
-                      index < Math.floor(dashboardData.averageRating)
-                        ? "filled"
-                        : ""
-                    } ${
-                      index === Math.floor(dashboardData.averageRating) &&
-                      dashboardData.averageRating % 1 >= 0.5
-                        ? "half-filled"
-                        : ""
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              <span className="total-reviews">
-                {dashboardData.totalReviews} reviews
-              </span>
+      {/* Appointment Details Modal */}
+      <Modal
+        title="Appointment Details"
+        open={modalVisible}
+        onCancel={handleModalCancel}
+        footer={null}
+        width={580}
+      >
+        {modalLoading || !appointmentDetails ? (
+          <div style={{ textAlign: "center", padding: 32 }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              status: appointmentDetails.status,
+              diagnosis: appointmentDetails.medical_record?.diagnosis || "",
+              treatment: appointmentDetails.medical_record?.treatment || "",
+              notes: appointmentDetails.medical_record?.notes || "",
+              medicine_details:
+                appointmentDetails.prescription?.medicine_details || "",
+            }}
+          >
+            {/* STATUS */}
+            <Form.Item label="Status" name="status">
+              <Select
+                style={{ width: "100%" }}
+                onChange={async (value) => {
+                  try {
+                    setModalLoading(true);
+                    const token = localStorage.getItem("token");
+                    await axios.post(
+                      `${API_URL}/appointment/${value}/${selectedAppointment}`,
+                      {},
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    message.success("Status updated");
+                    // fetchDashboardData();
+                  } catch {
+                    message.error("Failed to update status");
+                  } finally {
+                    setModalLoading(false);
+                  }
+                }}
+              >
+                {Object.entries(statusConfig)
+                  .filter(([key]) =>
+                    ["scheduled", "completed", "no_show"].includes(key)
+                  )
+                  .map(([status, config]) => (
+                    <Option key={status} value={status}>
+                      {config.label}
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+            <Divider />
+            {/* MEDICAL RECORD */}
+            <div className="modal-section-title">Medical Record</div>
+            <Form.Item
+              label="Diagnosis"
+              name="diagnosis"
+              rules={[{ required: true, message: "Please enter diagnosis" }]}
+            >
+              <Input.TextArea rows={4} placeholder="Enter diagnosis..." />
+            </Form.Item>
+            <Form.Item
+              label="Treatment"
+              name="treatment"
+              rules={[{ required: true, message: "Please enter treatment" }]}
+            >
+              <Input.TextArea rows={4} placeholder="Enter treatment..." />
+            </Form.Item>
+            <Form.Item label="Notes" name="notes">
+              <Input.TextArea rows={4} placeholder="Enter notes ..." />
+            </Form.Item>
+            <div className="modal-btn-group">
+              {appointmentDetails.medical_record && (
+                <Button type="primary" onClick={handleUpdateMedicalRecord}>
+                  Update
+                </Button>
+              )}
             </div>
-          </div>
-          <div className="rating-distribution">
-            {dashboardData.ratings.map(({ rating, count, percentage }) => (
-              <div key={rating} className="rating-bar">
-                <span className="rating-label">{rating} stars</span>
-                <div className="bar-container">
-                  <div
-                    className="bar-fill"
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-                <span className="rating-count">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+            <Divider />
+            {/* PRESCRIPTION */}
+            <div className="modal-section-title">Prescription</div>
+            <Form.Item
+              label="Medicine Details"
+              name="medicine_details"
+              rules={[
+                { required: true, message: "Please enter medicine details" },
+              ]}
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder="Enter medicine details..."
+              />
+            </Form.Item>
+            <div className="modal-btn-group">
+              {appointmentDetails.prescription && (
+                <Button type="primary" onClick={handleUpdatePrescription}>
+                  Update
+                </Button>
+              )}
+            </div>
 
-        <div className="calendar-section">
-          <h3>Calendar</h3>
-          <div className="calendar-container">
-            <Calendar
-              onChange={setDate}
-              value={date}
-              tileContent={tileContent}
-            />
-          </div>
-        </div>
-      </div> */}
+            {/* Buttons */}
+            <div className="modal-btn-group">
+              {!appointmentDetails.medical_record &&
+                !appointmentDetails.prescription && (
+                  <Button
+                    type="primary"
+                    onClick={handleAddMedicalRecordAndPrescription}
+                    loading={modalLoading}
+                  >
+                    Add Medical Record & Prescription
+                  </Button>
+                )}
+            </div>
+          </Form>
+        )}
+      </Modal>
     </div>
   );
 };

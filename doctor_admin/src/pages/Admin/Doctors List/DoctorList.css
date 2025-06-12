@@ -284,3 +284,9 @@
   color: #000 !important;
   border: 1px solid #575757 !important;
 }
+.admin-doctor-list-password-form-item .ant-input,
+.admin-doctor-list-password-form-item .ant-input-password {
+  min-height: 30px !important;
+  height: 30px !important;
+  line-height: 1.5715;
+}

@@ -198,13 +198,9 @@ const PatientList = () => {
       key: "insurance_number",
     },
     {
-      title: "Id number",
+      title: "Id Number",
       dataIndex: "id_number",
       key: "id_number",
-    },
-    {
-      title: "ID Number",
-      dataIndex: "id_number",
     },
     {
       title: "Action",
