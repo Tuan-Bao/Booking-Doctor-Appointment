@@ -26,8 +26,8 @@ const PatientList = () => {
   const navigate = useNavigate();
   const { API_URL } = useAppContext();
   const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(false);  const [searchText, setSearchText] = useState("");
+  const [searchCriteria, setSearchCriteria] = useState("username");
   const [addPatientModal, setAddPatientModal] = useState(false);
   const [addAppointmentModal, setAddAppointmentModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -217,11 +217,30 @@ const PatientList = () => {
         </Button>
       ),
     },
-  ];
-
-  const filteredPatients = patients.filter((patient) =>
-    patient.user.username.toLowerCase().includes(searchText.toLowerCase())
-  );
+  ];  const filteredPatients = patients.filter((patient) => {
+    if (!searchText) return true;
+    
+    const searchValue = searchText.toLowerCase();
+    // Kiểm tra giá trị tồn tại trước khi chuyển sang lowercase
+    const hasValue = (value) => value ? value.toString().toLowerCase().includes(searchValue) : false;
+    
+    switch (searchCriteria) {
+      case 'username':
+        return hasValue(patient.user?.username);
+      case 'email':
+        return hasValue(patient.user?.email);
+      case 'phone_number':
+        return hasValue(patient.phone_number);
+      case 'address':
+        return hasValue(patient.address);
+      case 'id_number':
+        return hasValue(patient.id_number);
+      case 'insurance_number':
+        return hasValue(patient.insurance_number);
+      default:
+        return true;
+    }
+  });
 
   return (
     <div className="patient-list">
@@ -229,24 +248,36 @@ const PatientList = () => {
         Patients List
       </Title>
       <Card>
-        <div className="patient-list-header">
+        <div className="patient-list-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Space>
+            <Select
+              defaultValue="username"
+              style={{ width: 120 }}
+              onChange={value => setSearchCriteria(value)}
+            >
+              <Select.Option value="username">Name</Select.Option>
+              <Select.Option value="email">Email</Select.Option>
+              <Select.Option value="phone_number">Phone</Select.Option>
+              <Select.Option value="address">Address</Select.Option>
+              <Select.Option value="id_number">ID Number</Select.Option>
+              <Select.Option value="insurance_number">Insurance Number</Select.Option>
+            </Select>
             <Input
-              placeholder="Search patients"
+              placeholder={`Search by ${searchCriteria}`}
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="search-input"
             />
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="add-patient-button"
-              onClick={() => setAddPatientModal(true)}
-            >
-              Add Patient
-            </Button>
           </Space>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="add-patient-button"
+            onClick={() => setAddPatientModal(true)}
+          >
+            Add Patient
+          </Button>
         </div>
 
         <Table

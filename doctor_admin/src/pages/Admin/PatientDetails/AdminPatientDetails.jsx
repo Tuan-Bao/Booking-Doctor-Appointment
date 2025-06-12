@@ -13,6 +13,8 @@ import {
   Tag,
   Spin,
   DatePicker,
+  Descriptions,
+  Avatar,
 } from "antd";
 import {
   EyeOutlined,
@@ -37,6 +39,7 @@ const AdminPatientDetails = () => {
   const [viewDetailsModal, setViewDetailsModal] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     fetchPatientAppointments();
@@ -70,6 +73,7 @@ const AdminPatientDetails = () => {
         }
       );
       setAppointments(response.data.appointments);
+      setUserInfo(response.data.user);
     } catch (err) {
       message.error("Failed to load patient appointments");
       console.log(err);
@@ -244,7 +248,7 @@ const AdminPatientDetails = () => {
           Back
         </Button>
         <Title className="patient-details-title" level={2}>
-          Patient Appointments
+          Patient Details
         </Title>
       </div>
       <Card>
@@ -254,6 +258,57 @@ const AdminPatientDetails = () => {
           </div>
         ) : (
           <>
+            {/* Hiển thị thông tin người dùng */}
+            {userInfo && (
+              <div className="user-info" style={{ marginBottom: 24 }}>
+                <Card type="inner" title="Patient Information" bordered={false}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+                    <Avatar
+                      size={64}
+                      src={userInfo.avatar}
+                      style={{ marginRight: 24, background: "#87d068" }}
+                    >
+                      {userInfo.username?.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: 20 }}>
+                        {userInfo.username}
+                      </span>
+                      <div style={{ color: "#888" }}>{userInfo.email}</div>
+                    </div>
+                  </div>
+                  <Descriptions column={2} size="middle" bordered>
+                    <Descriptions.Item label="Full Name">
+                      {userInfo.username || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Gender">
+                      {userInfo.patient?.gender === "male"
+                        ? "Male"
+                        : userInfo.patient?.gender === "female"
+                        ? "Female"
+                        : "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date of Birth">
+                      {userInfo.patient?.date_of_birth
+                        ? dayjs(userInfo.patient.date_of_birth).format("DD/MM/YYYY")
+                        : "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Phone">
+                      {userInfo.patient?.phone_number || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Address" span={2}>
+                      {userInfo.patient?.address || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Insurance Number">
+                      {userInfo.patient?.insurance_number || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="ID Number">
+                      {userInfo.patient?.id_number || "N/A"}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </div>
+            )}
             <div className="appointments-section">
               <div className="appointments-header">
                 <h3>Appointment History</h3>
