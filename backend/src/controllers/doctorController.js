@@ -168,3 +168,12 @@ export const getDoctorShifts = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getTopDoctors = async (req, res, next) => {
+  try {
+    const result = await doctorService.getTopDoctors();
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

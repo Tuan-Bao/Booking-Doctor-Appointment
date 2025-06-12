@@ -76,4 +76,6 @@ doctorRouter.get(
   doctorController.getDoctorShifts
 );
 
+doctorRouter.get("/top", doctorController.getTopDoctors);
+
 export default doctorRouter;

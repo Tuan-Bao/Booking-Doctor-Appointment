@@ -609,3 +609,27 @@ export const getDoctorShifts = async (user_id) => {
     throw new Error(error.message);
   }
 };
+
+export const getTopDoctors = async () => {
+  try {
+    const doctors = await Doctor.findAll({
+      include: [
+        { model: User, as: "user", attributes: { exclude: ["password"] } },
+        { model: Specialization, as: "specialization" },
+      ],
+      order: [["rating", "DESC"]],
+      limit: 10,
+    });
+
+    if (doctors.length === 0) {
+      throw new NotFoundError("No doctors found");
+    }
+
+    return {
+      message: "Success",
+      doctors,
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
