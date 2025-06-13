@@ -100,4 +100,25 @@ adminRouter.post(
   adminController.searchDoctors
 );
 
+adminRouter.patch(
+  "/update_patient/:user_id",
+  authentication,
+  authorized(["admin"]),
+  adminController.updatePatientProfile
+);
+
+adminRouter.post(
+  "/doctor_shifts/bulk",
+  authentication,
+  authorized(["admin"]),
+  adminController.createBulkDoctorShifts
+);
+
+adminRouter.get(
+  "/doctor_shifts",
+  authentication,
+  authorized(["admin"]),
+  adminController.getAllDoctorShifts
+);
+
 export default adminRouter;

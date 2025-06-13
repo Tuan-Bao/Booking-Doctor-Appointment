@@ -558,20 +558,31 @@ export const addPatientOffline = async (patientData) => {
   }
 };
 
-export const searchDoctors = async (
-  specialization_id,
-  shift_date,
-  shift_type,
-  start_time,
-  end_time
-) => {
+export const searchDoctors = async (specialization_id) => {
   try {
-    // Validate date format
-    const shiftDate = new Date(shift_date);
-    if (isNaN(shiftDate.getTime())) {
-      throw new BadRequestError("Invalid date format");
+    // Get current time and date
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5); // Format: HH:mm
+    // const currentDate = now.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+    const currentDate = now.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+    // Determine shift type based on current time
+    let shift_type;
+    const hour = now.getHours();
+    if (hour >= 0 && hour < 13) {
+      shift_type = "morning";
+    } else if (hour >= 13 && hour < 23) {
+      shift_type = "afternoon";
+    } else {
+      return {
+        message: "No doctors available at this time",
+        doctors: [],
+      };
     }
-
+    console.log(shift_type);
+    console.log(currentTime);
+    console.log(currentDate);
     // Find doctors with matching specialization
     const doctors = await Doctor.findAll({
       where: {
@@ -587,12 +598,10 @@ export const searchDoctors = async (
           model: DoctorShift,
           as: "doctor_shifts",
           where: {
-            shift_date,
+            shift_date: currentDate,
             shift_type,
-            [Op.and]: [
-              { start_time: { [Op.lte]: start_time } },
-              { end_time: { [Op.gte]: end_time } },
-            ],
+            start_time: { [Op.lte]: currentTime },
+            end_time: { [Op.gte]: currentTime },
           },
           required: true,
         },
@@ -615,4 +624,153 @@ export const searchDoctors = async (
     if (error instanceof NotFoundError) throw error;
     throw error;
   }
+};
+
+export const updatePatientProfile = async (user_id, updateData) => {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const user = await User.findByPk(user_id, {
+      attributes: { exclude: ["password"] },
+      include: [{ model: Patient, as: "patient" }],
+      transaction,
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const { patient } = user;
+    if (!patient) {
+      throw new NotFoundError("Patient not found");
+    }
+
+    const userFields = ["username", "email"];
+    let emailChanged = false;
+    userFields.forEach((field) => {
+      if (updateData[field] !== undefined) {
+        if (field === "email" && updateData.email !== user.email) {
+          emailChanged = true;
+        }
+        user[field] = updateData[field];
+      }
+    });
+
+    if (updateData.avatar) {
+      const uploadResult = await cloudinary.uploader.upload(updateData.avatar, {
+        folder: "avatars",
+        use_filename: true,
+        unique_filename: false,
+      });
+      user.avatar = uploadResult.secure_url;
+    }
+
+    const patientFields = [
+      "date_of_birth",
+      "gender",
+      "address",
+      "phone_number",
+      "insurance_number",
+      "id_number",
+    ];
+
+    patientFields.forEach((field) => {
+      if (updateData[field] !== undefined) {
+        patient[field] = updateData[field];
+      }
+    });
+
+    if (emailChanged) {
+      const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp_expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+
+      patient.is_verified = false;
+      patient.otp_code = otp_code;
+      patient.otp_expiry = otp_expiry;
+    }
+
+    await user.save({ transaction });
+    await patient.save({ transaction });
+
+    if (emailChanged) {
+      const link = `${process.env.URL}/patient/verify?email=${updateData.email}&otp_code=${patient.otp_code}`;
+      await sendVerifyLink(updateData.email, link); // Gửi email xác thực mới
+    }
+
+    await transaction.commit();
+    return { message: "Success" };
+  } catch (error) {
+    await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};
+
+export const createBulkDoctorShifts = async (shifts) => {
+  const transaction = await db.sequelize.transaction();
+  try {
+    // Validate dữ liệu đầu vào
+    for (const shift of shifts) {
+      const { doctor_id, shift_date, shift_type, start_time, end_time } = shift;
+
+      // Kiểm tra bác sĩ tồn tại
+      const doctor = await Doctor.findByPk(doctor_id);
+      if (!doctor) {
+        throw new BadRequestError(`Doctor with ID ${doctor_id} not found`);
+      }
+
+      // Kiểm tra trùng ca
+      const exists = await DoctorShift.findOne({
+        where: { doctor_id, shift_date, shift_type },
+        transaction,
+      });
+
+      if (exists) {
+        throw new BadRequestError(
+          `Shift already exists for doctor ${doctor_id} on ${shift_date} (${shift_type})`
+        );
+      }
+
+      // Kiểm tra thời gian hợp lệ
+      const start = new Date(`${shift_date}T${start_time}`);
+      const end = new Date(`${shift_date}T${end_time}`);
+
+      if (start >= end) {
+        throw new BadRequestError(
+          `Invalid time range for doctor ${doctor_id} on ${shift_date}`
+        );
+      }
+
+      // Kiểm tra tổng số giờ làm việc
+      const totalHours = (end - start) / (1000 * 60 * 60);
+      if (totalHours > 12) {
+        throw new BadRequestError(
+          `Total working hours cannot exceed 12 hours for doctor ${doctor_id} on ${shift_date}`
+        );
+      }
+    }
+
+    // Tạo các ca làm việc
+    const createdShifts = await DoctorShift.bulkCreate(shifts, { transaction });
+
+    await transaction.commit();
+    return { message: "Success", shifts: createdShifts };
+  } catch (error) {
+    await transaction.rollback();
+    if (error instanceof BadRequestError) throw error;
+    throw new Error(error.message);
+  }
+};
+
+export const getAllDoctorShifts = async () => {
+  const shifts = await DoctorShift.findAll({
+    include: [
+      {
+        model: Doctor,
+        as: "doctor",
+      },
+    ],
+  });
+  return { message: "Success", shifts };
 };

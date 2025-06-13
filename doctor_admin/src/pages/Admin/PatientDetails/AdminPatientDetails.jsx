@@ -7,7 +7,6 @@ import {
   Table,
   Button,
   Modal,
-  message,
   Space,
   Typography,
   Tag,
@@ -15,6 +14,10 @@ import {
   DatePicker,
   Descriptions,
   Avatar,
+  Form,
+  Input,
+  Select,
+  Popconfirm,
 } from "antd";
 import {
   EyeOutlined,
@@ -22,11 +25,15 @@ import {
   ArrowLeftOutlined,
   FilterOutlined,
   CheckOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "./AdminPatientDetails.css";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const AdminPatientDetails = () => {
   const { user_id } = useParams();
@@ -40,6 +47,8 @@ const AdminPatientDetails = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchPatientAppointments();
@@ -75,7 +84,7 @@ const AdminPatientDetails = () => {
       setAppointments(response.data.appointments);
       setUserInfo(response.data.user);
     } catch (err) {
-      message.error("Failed to load patient appointments");
+      toast.error("Failed to load patient appointments");
       console.log(err);
     } finally {
       setLoading(false);
@@ -95,7 +104,7 @@ const AdminPatientDetails = () => {
       );
       setAppointmentDetails(response.data.appointmentDetails);
     } catch (err) {
-      message.error("Failed to load appointment details");
+      toast.error("Failed to load appointment details");
       console.log(err);
     } finally {
       setDetailsLoading(false);
@@ -112,10 +121,10 @@ const AdminPatientDetails = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Payment successful");
+      toast.success("Payment successful");
       fetchPatientAppointments(); // Refresh the list
     } catch (err) {
-      message.error(err.response?.data?.message || "Payment failed");
+      toast.error(err.response?.data?.message || "Payment failed");
       console.log(err);
     }
   };
@@ -130,10 +139,10 @@ const AdminPatientDetails = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Check in successful");
+      toast.success("Check in successful");
       fetchPatientAppointments(); // Refresh the list
     } catch (err) {
-      message.error(err.response?.data?.message || "Check in failed");
+      toast.error(err.response?.data?.message || "Check in failed");
       console.log(err);
     }
   };
@@ -237,6 +246,35 @@ const AdminPatientDetails = () => {
     },
   ];
 
+  const handleUpdateProfile = async (values) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API_URL}/admin/update_patient/${user_id}`, values, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Profile updated successfully");
+      setUpdateModalVisible(false);
+      fetchPatientAppointments(); // Refresh data
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update profile");
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/patient/delete_patient`, {
+        data: { user_id },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Patient deleted successfully");
+      navigate(-1); // Go back to previous page
+    } catch (err) {
+      console.log(err);
+      toast.error(err.response?.data?.message || "Failed to delete patient");
+    }
+  };
+
   return (
     <div className="patient-details">
       <div className="patient-details-header">
@@ -250,6 +288,39 @@ const AdminPatientDetails = () => {
         <Title className="patient-details-title" level={2}>
           Patient Details
         </Title>
+        <Space>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => {
+              form.setFieldsValue({
+                username: userInfo?.username,
+                email: userInfo?.email,
+                gender: userInfo?.patient?.gender,
+                date_of_birth: userInfo?.patient?.date_of_birth
+                  ? dayjs(userInfo.patient.date_of_birth)
+                  : null,
+                phone_number: userInfo?.patient?.phone_number,
+                address: userInfo?.patient?.address,
+                insurance_number: userInfo?.patient?.insurance_number,
+                id_number: userInfo?.patient?.id_number,
+              });
+              setUpdateModalVisible(true);
+            }}
+          >
+            Update Profile
+          </Button>
+          <Popconfirm
+            title="Delete Patient"
+            description="Are you sure you want to delete this patient? This action cannot be undone."
+            onConfirm={handleDeletePatient}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button danger icon={<DeleteOutlined />}>
+              Delete Patient
+            </Button>
+          </Popconfirm>
+        </Space>
       </div>
       <Card>
         {loading ? (
@@ -262,7 +333,13 @@ const AdminPatientDetails = () => {
             {userInfo && (
               <div className="user-info" style={{ marginBottom: 24 }}>
                 <Card type="inner" title="Patient Information" bordered={false}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 16,
+                    }}
+                  >
                     <Avatar
                       size={64}
                       src={userInfo.avatar}
@@ -278,7 +355,7 @@ const AdminPatientDetails = () => {
                     </div>
                   </div>
                   <Descriptions column={2} size="middle" bordered>
-                    <Descriptions.Item label="Full Name">
+                    <Descriptions.Item label="Name">
                       {userInfo.username || "N/A"}
                     </Descriptions.Item>
                     <Descriptions.Item label="Gender">
@@ -290,7 +367,9 @@ const AdminPatientDetails = () => {
                     </Descriptions.Item>
                     <Descriptions.Item label="Date of Birth">
                       {userInfo.patient?.date_of_birth
-                        ? dayjs(userInfo.patient.date_of_birth).format("DD/MM/YYYY")
+                        ? dayjs(userInfo.patient.date_of_birth).format(
+                            "DD/MM/YYYY"
+                          )
                         : "N/A"}
                     </Descriptions.Item>
                     <Descriptions.Item label="Phone">
@@ -299,10 +378,10 @@ const AdminPatientDetails = () => {
                     <Descriptions.Item label="Address" span={2}>
                       {userInfo.patient?.address || "N/A"}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Insurance Number">
+                    <Descriptions.Item label="Health Insurance Code">
                       {userInfo.patient?.insurance_number || "N/A"}
                     </Descriptions.Item>
-                    <Descriptions.Item label="ID Number">
+                    <Descriptions.Item label="Citizen ID">
                       {userInfo.patient?.id_number || "N/A"}
                     </Descriptions.Item>
                   </Descriptions>
@@ -417,6 +496,112 @@ const AdminPatientDetails = () => {
             </div>
           )
         )}
+      </Modal>
+
+      {/* Update Profile Modal */}
+      <Modal
+        title="Update Patient Profile"
+        open={updateModalVisible}
+        onCancel={() => setUpdateModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateProfile}
+          className="update-profile-form"
+        >
+          <Form.Item
+            name="username"
+            label="Name"
+            rules={[{ required: true, message: "Please input name!" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: "Please input email!" },
+              { type: "email", message: "Please enter a valid email!" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="gender"
+            label="Gender"
+            rules={[{ required: true, message: "Please select gender!" }]}
+          >
+            <Select>
+              <Option value="male">Male</Option>
+              <Option value="female">Female</Option>
+              <Option value="other">Other</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="date_of_birth"
+            label="Date of Birth"
+            rules={[
+              { required: true, message: "Please select date of birth!" },
+            ]}
+          >
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
+
+          <Form.Item
+            name="phone_number"
+            label="Phone Number"
+            rules={[{ required: true, message: "Please input phone number!" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="address"
+            label="Address"
+            rules={[{ required: true, message: "Please input address!" }]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+
+          <Form.Item name="insurance_number" label="Health Insurance Code">
+            <Input />
+          </Form.Item>
+
+          <Form.Item name="id_number" label="Citizen ID">
+            <Input />
+          </Form.Item>
+
+          <Form.Item style={{ marginTop: -10 }}>
+            <Space>
+              <Button
+                style={{
+                  backgroundColor: "#fff",
+                  color: "blue",
+                  border: "1px solid blue",
+                }}
+                htmlType="submit"
+              >
+                Update
+              </Button>
+              <Button
+                style={{
+                  backgroundColor: "#fff",
+                  color: "red",
+                  border: "1px solid red",
+                }}
+                onClick={() => setUpdateModalVisible(false)}
+              >
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

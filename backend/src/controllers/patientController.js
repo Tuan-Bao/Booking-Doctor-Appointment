@@ -173,3 +173,13 @@ export const getPaymentById = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deletePatient = async (req, res, next) => {
+  try {
+    const { user_id } = req.body;
+    const result = await patientService.deletePatient(user_id);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

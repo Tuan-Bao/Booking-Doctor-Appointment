@@ -39,7 +39,7 @@ patientRouter.get(
 patientRouter.patch(
   "/update",
   authentication,
-  authorized(["patient"]),
+  authorized(["patient", "admin"]),
   upload.single("avatar"),
   patientController.updatePatientProfile
 );
@@ -77,6 +77,13 @@ patientRouter.get(
   authentication,
   authorized(["patient"]),
   patientController.getPaymentById
+);
+
+patientRouter.delete(
+  "/delete_patient",
+  authentication,
+  authorized(["admin"]),
+  patientController.deletePatient
 );
 
 export default patientRouter;

@@ -2,10 +2,18 @@
   padding: 24px;
   margin: 0 auto;
   background: #f5f7fa;
-  height: calc(100vh - 48px);
+
   overflow: auto;
-  max-width: none; /* Remove max-width restriction */
-  width: 100%;
+  max-width: none;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
 }
 
 .schedule-header {
@@ -15,156 +23,260 @@
   margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 16px 24px;
+  padding: 20px 24px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .week-navigation {
   display: flex;
   align-items: center;
   gap: 16px;
+  background: #f8f9fa;
+  padding: 8px 16px;
+  border-radius: 8px;
 }
 
 .current-week {
   min-width: 200px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .header-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+}
+
+.header-buttons .ant-btn {
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 500;
 }
 
 .filters-section {
   margin-bottom: 24px;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.filters-section .ant-select {
+  min-width: 200px;
 }
 
 .schedule-grid {
   overflow: auto;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin: 24px 0;
-  padding: 16px;
-  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 24px;
+  margin-left: -22px;
+  padding: 20px;
 }
 
 .schedule-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: max-content; /* Ensure table doesn't shrink */
-}
-
-.schedule-table th,
-.schedule-table td {
-  border: 1px solid #f0f0f0;
-  padding: 12px;
-  text-align: center;
+  min-width: max-content;
 }
 
 .schedule-table th {
-  background-color: #fafafa;
-  font-weight: 500;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #1a1a1a;
+  padding: 16px;
+  border-bottom: 2px solid #e9ecef;
 }
 
 .schedule-table td {
-  padding: 12px;
+  padding: 16px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
-  min-width: 180px;
-}
-
-.schedule-table tr:hover td {
-  background-color: #fafafa;
+  border-bottom: 1px solid #e9ecef;
+  min-width: 200px;
+  vertical-align: top;
 }
 
 .doctor-info {
   text-align: left !important;
-  min-width: 200px;
+  min-width: 220px;
+  background: #f8f9fa;
+  padding: 16px !important;
 }
 
 .doctor-name {
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a1a;
+  margin-bottom: 6px;
 }
 
 .doctor-id {
-  color: #666;
-  font-size: 12px;
-  margin-bottom: 4px;
+  color: #6c757d;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 
 .doctor-spec {
   color: #1890ff;
-  font-size: 12px;
-  margin-bottom: 8px;
-}
-
-.editable-cell {
-  padding: 0 !important;
-  height: 120px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #e6f7ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .shift-cell {
-  padding: 8px;
-  border-radius: 4px;
-  min-height: 120px;
+  padding: 12px;
+  border-radius: 8px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
 }
 
 .shift-cell:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1890ff;
 }
 
-.empty-shift {
-  background-color: #fafafa;
-  border: 1px dashed #d9d9d9;
+.shift-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.shift-morning {
-  background-color: #1890ff;
-  color: white;
-}
-
-.shift-afternoon {
-  background-color: #fffbe6;
-}
-
-.shift-custom {
-  background-color: #f0f0f0;
-}
-
-.shift-time {
+.shift-checkbox {
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid #e9ecef;
+  text-align: center;
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 4px;
 }
 
-.editable-cell {
-  position: relative;
+.shift-checkbox.morning {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+  color: #0050b3;
 }
 
-.editable-cell:hover .edit-button {
-  opacity: 1;
+.shift-checkbox.afternoon {
+  background: #fff7e6;
+  border-color: #ffd591;
+  color: #873800;
 }
 
-.edit-button {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  opacity: 0;
-  transition: opacity 0.3s;
+.shift-checkbox.morning:hover {
+  background: #bae7ff;
+  border-color: #1890ff;
 }
 
-.totals-row td {
-  background-color: #fafafa;
+.shift-checkbox.afternoon:hover {
+  background: #ffe7ba;
+  border-color: #faad14;
+}
+
+.shift-checkbox.morning.active {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.shift-checkbox.afternoon.active {
+  background: #faad14;
+  color: white;
+  border-color: #faad14;
+}
+
+.doctor-department {
+  font-size: 13px;
+  color: #6c757d;
+  margin-top: auto;
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.shift-cell.selected {
+  background: #e6f7ff;
+  border: 2px solid #1890ff;
+  box-shadow: 0 0 12px rgba(24, 144, 255, 0.2);
+}
+
+.department-summary {
+  margin-top: 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+}
+
+.department-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.department-cell {
+  min-width: 200px;
+  background: #f8f9fa;
+}
+
+.time-slot {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.time-slot.morning {
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  color: #0050b3;
+}
+
+.time-slot.afternoon {
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #873800;
+}
+
+.schedule-summary {
+  margin-top: 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+}
+
+.summary-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.summary-table .total-hours {
+  font-weight: 600;
+  background: #e6f7ff;
+  color: #0050b3;
+}
+
+.summary-table .day-hours {
+  min-width: 120px;
+  background: #f8f9fa;
   font-weight: 500;
 }
 
@@ -172,210 +284,77 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background-color: white;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   max-width: 400px;
   width: 100%;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #e9ecef;
 }
 
 .selection-controls .ant-typography {
   display: inline-block;
   margin-bottom: 16px;
-  padding: 4px 8px;
-  background-color: #e6f7ff;
-  border-radius: 4px;
+  padding: 6px 12px;
+  background: #e6f7ff;
+  border-radius: 6px;
   font-weight: 500;
-}
-
-.shift-popover {
-  min-width: 300px;
-}
-
-.shift-form .ant-form-item {
-  margin-bottom: 12px;
-}
-
-.shift-options {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 4px 0;
-}
-
-.shift-checkbox {
-  padding: 6px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: 1px solid #d9d9d9;
-  text-align: center;
-  font-size: 13px;
-}
-
-.shift-checkbox:hover {
-  border-color: #1890ff;
-}
-
-.shift-checkbox {
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: 1px solid #d9d9d9;
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.shift-checkbox.morning:hover {
-  border-color: #1890ff;
-}
-
-.shift-checkbox.afternoon:hover {
-  border-color: #faad14;
-}
-
-.shift-checkbox.morning.active {
-  background-color: #1890ff;
-  color: white;
-  border-color: #1890ff;
-}
-
-.shift-checkbox.afternoon.active {
-  background-color: #faad14;
-  color: white;
-  border-color: #faad14;
-}
-
-.custom-shift {
-  background-color: #f5f5f5;
-  padding: 6px 8px;
-  margin: 4px 0;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 13px;
-  border: 1px dashed #d9d9d9;
-}
-
-.doctor-department {
-  font-size: 12px;
-  color: #666;
-  margin-top: auto;
-  text-align: center;
-  padding-top: 8px;
-  border-top: 1px dashed #f0f0f0;
-}
-
-.shift-cell.selected {
-  background-color: #e6f7ff;
-  border: 2px solid #1890ff;
-  box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
-}
-
-.schedule-summary {
-  margin-top: 32px;
-  margin-bottom: 32px;
-}
-
-.summary-table {
-  margin-top: 16px;
-}
-
-.summary-table th,
-.summary-table td {
-  text-align: center !important;
-  padding: 12px !important;
-}
-
-.summary-table .doctor-info {
-  text-align: left !important;
-  min-width: 200px;
-}
-
-.summary-table .total-hours {
-  font-weight: 500;
-  background-color: #f0f5ff;
-}
-
-.summary-table .day-hours {
-  min-width: 100px;
-  background-color: #fafafa;
-}
-
-.summary-table .doctor-name {
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.summary-table .doctor-spec {
-  color: #1890ff;
-  font-size: 12px;
-}
-
-.department-summary {
-  margin-top: 32px;
-  margin-bottom: 32px;
-}
-
-.department-table {
-  margin-top: 16px;
-}
-
-.department-table th,
-.department-table td {
-  text-align: left !important;
-  padding: 12px !important;
-  vertical-align: top;
-}
-
-.department-table .department-info {
-  min-width: 200px;
-  background-color: #fafafa;
-}
-
-.department-table .department-name {
-  font-weight: 500;
-  color: #1890ff;
-}
-
-.department-cell {
-  min-width: 180px;
-}
-
-.time-slot {
-  margin: 4px 0;
-  padding: 6px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.time-slot.morning {
-  background-color: #e6f7ff;
-  border: 1px solid #91d5ff;
   color: #0050b3;
 }
 
-.time-slot.afternoon {
-  background-color: #fff7e6;
-  border: 1px solid #ffd591;
-  color: #873800;
+/* Modal styles */
+.ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
+.ant-modal-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 16px 24px;
+}
+
+.ant-modal-title {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.ant-modal-body {
+  padding: 24px;
+}
+
+.shift-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.shift-form .ant-form-item-label {
+  font-weight: 500;
+}
+
+.shift-form .ant-radio-group {
+  display: flex;
+  gap: 16px;
+}
+
+.shift-form .ant-time-picker {
+  width: 100%;
+}
+
+/* Responsive styles */
 @media (max-width: 1200px) {
   .schedule-grid {
     overflow-x: auto;
   }
-  
+
   .schedule-table td,
   .schedule-table th {
-    min-width: 140px;
+    min-width: 160px;
   }
-  
+
   .doctor-info {
-    min-width: 180px;
+    min-width: 200px;
   }
 }
 
@@ -384,14 +363,39 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .week-navigation {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .header-buttons {
     width: 100%;
     justify-content: flex-end;
   }
+
+  .filters-section {
+    flex-direction: column;
+  }
+
+  .filters-section .ant-select {
+    width: 100% !important;
+  }
+}
+
+.table-x-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.department-table th,
+.department-table td,
+.summary-table th,
+.summary-table td {
+  min-width: 100px;
+  padding: 8px 6px;
+}
+.department-table .department-info,
+.summary-table .doctor-info {
+  min-width: 120px;
 }

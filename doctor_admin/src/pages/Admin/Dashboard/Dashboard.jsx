@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Statistic, Spin, Typography, Alert } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Spin,
+  Typography,
+  Alert,
+  DatePicker,
+  Space,
+} from "antd";
 import { useAppContext } from "../../../context/AppContext";
 import {
   CalendarOutlined,
@@ -10,17 +20,24 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import { Column, Pie, Line } from "@ant-design/plots";
 import axios from "axios";
+import dayjs from "dayjs";
 import "./Dashboard.css";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
 const { Title } = Typography;
+const { RangePicker } = DatePicker;
 
 const Dashboard = () => {
   const { API_URL } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState(null);
+  const [allAppointments, setAllAppointments] = useState([]);
   const [stats, setStats] = useState({
     totalAppointments: 0,
     paidAppointments: 0,
@@ -38,38 +55,41 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // useEffect(() => {
-  //   console.log("appointment trend: ", chartData.appointmentTrend);
-  // }, [chartData]);
+  useEffect(() => {
+    if (allAppointments.length > 0) {
+      processChartData(allAppointments);
+    }
+  }, [dateRange, allAppointments]);
 
-  const processChartData = (appointments, specializations) => {
+  const processChartData = (appointments) => {
+    // Filter appointments by date range if dateRange exists
+    const filteredAppointments = dateRange
+      ? appointments.filter((app) => {
+          const appointmentDate = dayjs(app.checkin_time, "HH:mm:ss D/M/YYYY");
+          return (
+            appointmentDate.isAfter(dateRange[0]) &&
+            appointmentDate.isBefore(dateRange[1].add(1, "day"))
+          );
+        })
+      : appointments;
+    console.log("filteredAppointments: ", filteredAppointments);
     // Process status distribution for pie chart
-    const statusCounts = appointments.reduce((acc, app) => {
+    const statusCounts = filteredAppointments.reduce((acc, app) => {
       acc[app.status] = (acc[app.status] || 0) + 1;
       return acc;
     }, {});
-    // console.log("statusCounts: ", statusCounts);
-    // const statusData = Object.entries(statusCounts).map(([status, count]) => ({
-    //   type: status.replace(/_/g, " ").toUpperCase(),
-    //   value: count,
-    // }));
+
     const statusData = Object.entries(statusCounts).map(([status, count]) => {
       let typeName = status.replace(/_/g, " ").toUpperCase();
-      // if (typeName === "WAITING FOR CONFIRMATION") {
-      //   typeName = "PENDING";
-      // } else if (typeName === "PATIENT NOT COMING") {
-      //   typeName = "NO SHOW";
-      // }
       return {
         type: typeName,
         value: count,
       };
     });
 
-    // console.log("statusData: ", statusData);
     // Process appointment trend data (by date) for line chart
-    const appointmentsByDate = appointments.reduce((acc, app) => {
-      const date = app.appointment_datetime.split(" ")[1];
+    const appointmentsByDate = filteredAppointments.reduce((acc, app) => {
+      const date = app.checkin_time.split(" ")[1];
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {});
@@ -82,18 +102,28 @@ const Dashboard = () => {
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     // Process specialization distribution for column chart
-    const specData = specializations.map((spec) => ({
-      name: spec.name,
-      appointments: appointments.filter(
-        (app) => app.doctor.specialization_id === spec.specialization_id
-      ).length,
-    }));
+    const specData =
+      stats.specializations?.map((spec) => ({
+        name: spec.name,
+        appointments: filteredAppointments.filter(
+          (app) => app.doctor.specialization_id === spec.specialization_id
+        ).length,
+      })) || [];
 
     setChartData({
       statusDistribution: statusData,
       appointmentTrend: trendData,
       specializationDistribution: specData,
     });
+
+    // Update stats
+    setStats((prev) => ({
+      ...prev,
+      totalAppointments: filteredAppointments.length,
+      paidAppointments: filteredAppointments.filter(
+        (app) => app.payment?.status === "paid"
+      ).length,
+    }));
   };
 
   const fetchDashboardData = async () => {
@@ -106,33 +136,25 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
 
-      const [
-        appointmentsRes,
-        paidAppointmentsRes,
-        doctorsRes,
-        patientsRes,
-        specializationsRes,
-      ] = await Promise.all([
-        axios.get(`${API_URL}/appointment/all`, { headers }),
-        axios.get(`${API_URL}/appointment/paid`, { headers }),
-        axios.get(`${API_URL}/doctor/all`, { headers }),
-        axios.get(`${API_URL}/patient/all`, { headers }),
-        axios.get(`${API_URL}/specialization/all`, { headers }),
-      ]);
+      const [appointmentsRes, doctorsRes, patientsRes, specializationsRes] =
+        await Promise.all([
+          axios.get(`${API_URL}/appointment/all`, { headers }),
+          axios.get(`${API_URL}/doctor/all`, { headers }),
+          axios.get(`${API_URL}/patient/all`, { headers }),
+          axios.get(`${API_URL}/specialization/all`, { headers }),
+        ]);
 
-      setStats({
-        totalAppointments: appointmentsRes.data.appointments.length || 0,
-        paidAppointments: paidAppointmentsRes.data.paidAppointments.length || 0,
+      setAllAppointments(appointmentsRes.data.appointments);
+      setStats((prev) => ({
+        ...prev,
         totalDoctors: doctorsRes.data.doctors.length || 0,
         totalPatients: patientsRes.data.patients.length || 0,
         totalSpecializations:
           specializationsRes.data.specializations.length || 0,
-      });
+        specializations: specializationsRes.data.specializations,
+      }));
 
-      processChartData(
-        appointmentsRes.data.appointments,
-        specializationsRes.data.specializations
-      );
+      processChartData(appointmentsRes.data.appointments);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data. Please try again later.");
@@ -211,9 +233,20 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <Title className="admin-title" level={2}>
-        Dashboard Overview
-      </Title>
+      <div className="dashboard-header">
+        <Title className="admin-title" level={2}>
+          Dashboard Overview
+        </Title>
+        <Space className="dashboard-filters">
+          <RangePicker
+            value={dateRange}
+            onChange={(dates) => setDateRange(dates)}
+            allowClear={true}
+            className="date-range-picker"
+            placeholder={["Start Date", "End Date"]}
+          />
+        </Space>
+      </div>
 
       {error && (
         <Alert

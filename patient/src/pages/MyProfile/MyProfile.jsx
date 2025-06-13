@@ -166,14 +166,14 @@ const MyProfile = () => {
 
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-group">
-            <label>Username</label>
+            <label>Name</label>
             {isEditing ? (
               <input
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="Enter username"
+                placeholder="Enter name"
               />
             ) : (
               <div className="profile-info">{formData.username}</div>
@@ -277,14 +277,14 @@ const MyProfile = () => {
           </div>
 
           <div className="form-group">
-            <label>Insurance Number</label>
+            <label>Health Insurance Code</label>
             {isEditing ? (
               <input
                 type="text"
                 name="insurance_number"
                 value={formData.insurance_number}
                 onChange={handleInputChange}
-                placeholder="Enter insurance number"
+                placeholder="Enter health insurance code"
               />
             ) : (
               <div className="profile-info">
@@ -294,14 +294,14 @@ const MyProfile = () => {
           </div>
 
           <div className="form-group">
-            <label>ID Number</label>
+            <label>Citizen ID</label>
             {isEditing ? (
               <input
                 type="text"
                 name="id_number"
                 value={formData.id_number}
                 onChange={handleInputChange}
-                placeholder="Enter ID number"
+                placeholder="Enter Citizen ID"
               />
             ) : (
               <div className="profile-info">

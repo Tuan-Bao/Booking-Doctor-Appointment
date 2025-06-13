@@ -8,7 +8,6 @@ import {
   Button,
   Modal,
   Form,
-  message,
   Space,
   Typography,
   Select,
@@ -19,6 +18,7 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "./PatientList.css";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
@@ -26,7 +26,8 @@ const PatientList = () => {
   const navigate = useNavigate();
   const { API_URL } = useAppContext();
   const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(false);  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const [searchCriteria, setSearchCriteria] = useState("username");
   const [addPatientModal, setAddPatientModal] = useState(false);
   const [addAppointmentModal, setAddAppointmentModal] = useState(false);
@@ -52,7 +53,7 @@ const PatientList = () => {
       });
       setSpecializations(response.data.specializations || []);
     } catch (err) {
-      message.error("Failed to load specializations");
+      toast.error("Failed to load specializations");
       console.log(err);
     }
   };
@@ -66,7 +67,7 @@ const PatientList = () => {
       });
       setPatients(response.data.patients || []);
     } catch (err) {
-      message.error("Failed to load patients");
+      toast.error("Failed to load patients");
       console.log(err);
     } finally {
       setLoading(false);
@@ -84,13 +85,13 @@ const PatientList = () => {
       await axios.post(`${API_URL}/admin/add_patient_offline`, formattedData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      message.success("Patient added successfully");
+      toast.success("Patient added successfully");
       setAddPatientModal(false);
       patientForm.resetFields();
       fetchPatients();
     } catch (err) {
       console.error("Error adding patient:", err);
-      message.error(err.response?.data?.message || "Failed to add patient");
+      toast.error(err.response?.data?.message || "Failed to add patient");
     }
   };
 
@@ -102,10 +103,6 @@ const PatientList = () => {
         `${API_URL}/admin/search_doctors`,
         {
           specialization_id: values.specialization_id,
-          shift_date: values.shift_date.format("YYYY-MM-DD"),
-          shift_type: values.shift_type,
-          start_time: values.time_range[0].format("HH:mm:ss"),
-          end_time: values.time_range[1].format("HH:mm:ss"),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -113,7 +110,7 @@ const PatientList = () => {
       );
       setDoctors(response.data.doctors || []);
     } catch (err) {
-      message.error("Failed to search doctors");
+      toast.error("Failed to search doctors");
       console.log(err);
     } finally {
       setSearchLoading(false);
@@ -134,22 +131,21 @@ const PatientList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Appointment added successfully");
+      toast.success("Appointment added successfully");
       setAddAppointmentModal(false);
       appointmentForm.resetFields();
       searchForm.resetFields();
       setSelectedDoctor(null);
       setDoctors([]);
     } catch (err) {
-      alert("Failed to add appointment");
-      message.error(err.response?.data?.message || "Failed to add appointment");
+      toast.error(err.response?.data?.message || "Failed to add appointment");
       console.log(err);
     }
   };
 
   const columns = [
     {
-      title: "Username",
+      title: "Name",
       dataIndex: ["user", "username"],
       key: "username",
       render: (name, record) => (
@@ -193,12 +189,12 @@ const PatientList = () => {
       key: "address",
     },
     {
-      title: "Insurance Number",
+      title: "Health Insurance Code",
       dataIndex: "insurance_number",
       key: "insurance_number",
     },
     {
-      title: "Id Number",
+      title: "Citizen ID",
       dataIndex: "id_number",
       key: "id_number",
     },
@@ -217,25 +213,27 @@ const PatientList = () => {
         </Button>
       ),
     },
-  ];  const filteredPatients = patients.filter((patient) => {
+  ];
+  const filteredPatients = patients.filter((patient) => {
     if (!searchText) return true;
-    
+
     const searchValue = searchText.toLowerCase();
     // Kiểm tra giá trị tồn tại trước khi chuyển sang lowercase
-    const hasValue = (value) => value ? value.toString().toLowerCase().includes(searchValue) : false;
-    
+    const hasValue = (value) =>
+      value ? value.toString().toLowerCase().includes(searchValue) : false;
+
     switch (searchCriteria) {
-      case 'username':
+      case "username":
         return hasValue(patient.user?.username);
-      case 'email':
+      case "email":
         return hasValue(patient.user?.email);
-      case 'phone_number':
+      case "phone_number":
         return hasValue(patient.phone_number);
-      case 'address':
+      case "address":
         return hasValue(patient.address);
-      case 'id_number':
+      case "id_number":
         return hasValue(patient.id_number);
-      case 'insurance_number':
+      case "insurance_number":
         return hasValue(patient.insurance_number);
       default:
         return true;
@@ -248,19 +246,28 @@ const PatientList = () => {
         Patients List
       </Title>
       <Card>
-        <div className="patient-list-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          className="patient-list-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Space>
             <Select
               defaultValue="username"
               style={{ width: 120 }}
-              onChange={value => setSearchCriteria(value)}
+              onChange={(value) => setSearchCriteria(value)}
             >
               <Select.Option value="username">Name</Select.Option>
               <Select.Option value="email">Email</Select.Option>
               <Select.Option value="phone_number">Phone</Select.Option>
               <Select.Option value="address">Address</Select.Option>
-              <Select.Option value="id_number">ID Number</Select.Option>
-              <Select.Option value="insurance_number">Insurance Number</Select.Option>
+              <Select.Option value="id_number">CID</Select.Option>
+              <Select.Option value="insurance_number">
+                Health Insurance Code
+              </Select.Option>
             </Select>
             <Input
               placeholder={`Search by ${searchCriteria}`}
@@ -304,8 +311,8 @@ const PatientList = () => {
         >
           <Form.Item
             name="username"
-            label="Username"
-            rules={[{ required: true, message: "Please input username!" }]}
+            label="Name"
+            rules={[{ required: true, message: "Please input name!" }]}
           >
             <Input />
           </Form.Item>
@@ -348,8 +355,8 @@ const PatientList = () => {
           </Form.Item>
           <Form.Item
             name="id_number"
-            label="ID Number"
-            rules={[{ required: true, message: "Please input ID number!" }]}
+            label="Citizen ID"
+            rules={[{ required: true, message: "Please input Citizen ID!" }]}
           >
             <Input />
           </Form.Item>
@@ -360,7 +367,7 @@ const PatientList = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item name="insurance_number" label="Insurance Number">
+          <Form.Item name="insurance_number" label="Health Insurance Code">
             <Input />
           </Form.Item>
           <Form.Item className="form-footer">
@@ -393,17 +400,6 @@ const PatientList = () => {
             layout="vertical"
             onFinish={handleSearchDoctors}
             className="search-doctors-form"
-            onValuesChange={(changed) => {
-              if (changed.shift_type) {
-                // Khi shift_type thay đổi, gán default time_range
-                const defaultRange =
-                  changed.shift_type === "morning"
-                    ? [dayjs("07:00", "HH:mm"), dayjs("12:00", "HH:mm")]
-                    : [dayjs("13:00", "HH:mm"), dayjs("17:00", "HH:mm")];
-
-                searchForm.setFieldsValue({ time_range: defaultRange });
-              }
-            }}
           >
             <div className="search-form-grid">
               <Form.Item
@@ -423,38 +419,6 @@ const PatientList = () => {
                     </Select.Option>
                   ))}
                 </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="shift_date"
-                label="Date"
-                rules={[{ required: true, message: "Please select date!" }]}
-              >
-                <DatePicker style={{ width: "100%" }} />
-              </Form.Item>
-
-              <Form.Item
-                name="shift_type"
-                label="Shift"
-                rules={[{ required: true, message: "Please select shift!" }]}
-              >
-                <Select>
-                  <Select.Option value="morning">Morning</Select.Option>
-                  <Select.Option value="afternoon">Afternoon</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="time_range"
-                label="Time Range"
-                rules={[
-                  { required: true, message: "Please select time range!" },
-                ]}
-              >
-                <TimePicker.RangePicker
-                  style={{ width: "100%" }}
-                  format="HH:mm"
-                />
               </Form.Item>
             </div>
 

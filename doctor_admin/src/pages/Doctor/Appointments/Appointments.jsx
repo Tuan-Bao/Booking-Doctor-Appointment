@@ -12,7 +12,6 @@ import {
   Select,
   Input,
   Form,
-  message,
   Spin,
   Divider,
 } from "antd";
@@ -28,6 +27,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./Appointments.css";
 import { parse, isSameDay } from "date-fns";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -236,7 +236,7 @@ const Appointments = () => {
           res.data.appointmentDetails.prescription?.medicine_details || "",
       });
     } catch {
-      message.error("Failed to load appointment details");
+      toast.error("Failed to load appointment details");
     } finally {
       setModalLoading(false);
     }
@@ -289,11 +289,11 @@ const Appointments = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      message.success("Medical record and prescription added successfully");
+      toast.success("Medical record and prescription added successfully");
       fetchAppointments();
       handleModalCancel();
     } catch (error) {
-      message.error("Failed to add medical record and prescription");
+      toast.error("Failed to add medical record and prescription");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -310,10 +310,10 @@ const Appointments = () => {
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Medical record updated successfully");
+      toast.success("Medical record updated successfully");
       fetchAppointments();
     } catch (error) {
-      message.error("Failed to update medical record");
+      toast.error("Failed to update medical record");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -330,10 +330,10 @@ const Appointments = () => {
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Prescription updated successfully");
+      toast.success("Prescription updated successfully");
       fetchAppointments();
     } catch (error) {
-      message.error("Failed to update prescription");
+      toast.error("Failed to update prescription");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -409,10 +409,10 @@ const Appointments = () => {
                       {},
                       { headers: { Authorization: `Bearer ${token}` } }
                     );
-                    message.success("Status updated");
+                    toast.success("Status updated");
                     fetchAppointments();
                   } catch {
-                    message.error("Failed to update status");
+                    toast.error("Failed to update status");
                   } finally {
                     setModalLoading(false);
                     // handleModalCancel();

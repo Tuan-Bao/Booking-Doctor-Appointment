@@ -9,7 +9,6 @@ import {
   Collapse,
   Tag,
   Empty,
-  message,
   Button,
 } from "antd";
 import {
@@ -22,6 +21,7 @@ import {
 import axios from "axios";
 import { useAppContext } from "../../../context/AppContext";
 import "./PatientDetails.css";
+import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -54,7 +54,7 @@ const PatientDetails = () => {
       setPatient(res.data.user);
       setAppointments(res.data.appointments || []);
     } catch {
-      message.error("Failed to load patient details");
+      toast.error("Failed to load patient details");
     } finally {
       setLoading(false);
     }

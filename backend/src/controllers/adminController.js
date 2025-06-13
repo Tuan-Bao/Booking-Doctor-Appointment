@@ -157,26 +157,61 @@ export const addPatientOffline = async (req, res, next) => {
 
 export const searchDoctors = async (req, res, next) => {
   try {
-    const { specialization_id, shift_date, shift_type, start_time, end_time } =
-      req.body;
+    const { specialization_id } = req.body;
 
-    if (
-      !specialization_id ||
-      !shift_date ||
-      !shift_type ||
-      !start_time ||
-      !end_time
-    ) {
-      throw new BadRequestError("Missing required fields");
+    if (!specialization_id) {
+      throw new BadRequestError("Missing specialization_id");
     }
 
-    const result = await adminService.searchDoctors(
-      specialization_id,
-      shift_date,
-      shift_type,
-      start_time,
-      end_time
-    );
+    const result = await adminService.searchDoctors(specialization_id);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePatientProfile = async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
+    const updateData = req.body;
+    const result = await adminService.updatePatientProfile(user_id, updateData);
+    return res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createBulkDoctorShifts = async (req, res, next) => {
+  try {
+    const { shifts } = req.body;
+    if (!shifts || !Array.isArray(shifts) || shifts.length === 0) {
+      throw new BadRequestError("Shifts array is required");
+    }
+
+    // Validate required fields for each shift
+    for (const shift of shifts) {
+      const { doctor_id, shift_date, shift_type, start_time, end_time } = shift;
+      if (
+        !doctor_id ||
+        !shift_date ||
+        !shift_type ||
+        !start_time ||
+        !end_time
+      ) {
+        throw new BadRequestError("Missing required fields in shift data");
+      }
+    }
+
+    const result = await adminService.createBulkDoctorShifts(shifts);
+    return res.status(StatusCodes.CREATED).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllDoctorShifts = async (req, res, next) => {
+  try {
+    const result = await adminService.getAllDoctorShifts();
     return res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);

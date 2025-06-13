@@ -15,7 +15,6 @@ import {
   TimePicker,
   Space,
   Popconfirm,
-  message,
   Spin,
   Select,
   Row,
@@ -39,6 +38,7 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 dayjs.extend(isSameOrAfter);
 import "./AdminDoctorDetails.css";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
@@ -105,7 +105,7 @@ const AdminDoctorDetails = () => {
       });
       setShifts(doctorShifts);
     } catch (err) {
-      // message.error(err.message || "Failed to load doctor details");
+      toast.error(err.message || "Failed to load doctor details");
       console.log(err);
     } finally {
       setLoading(false);
@@ -146,10 +146,10 @@ const AdminDoctorDetails = () => {
       await axios.delete(`${API_URL}/admin/doctor_shift/${shift_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      message.success("Shift deleted");
+      toast.success("Shift deleted");
       fetchDoctorDetails(user_id);
     } catch {
-      message.error("Failed to delete shift");
+      toast.error("Failed to delete shift");
     } finally {
       setShiftLoading(false);
     }
@@ -174,19 +174,33 @@ const AdminDoctorDetails = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        message.success("Shift updated");
+        toast.success("Shift updated");
       } else {
         await axios.post(`${API_URL}/admin/doctor_shift`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        message.success("Shift added");
+        toast.success("Shift added");
       }
       setShiftModal(false);
       fetchDoctorDetails(user_id);
     } catch {
-      message.error("Failed to save shift");
+      toast.error("Failed to save shift");
     } finally {
       setShiftLoading(false);
+    }
+  };
+
+  const handleShiftTypeChange = (value) => {
+    if (value === "morning") {
+      shiftForm.setFieldsValue({
+        start_time: dayjs("07:00", "HH:mm"),
+        end_time: dayjs("12:00", "HH:mm"),
+      });
+    } else if (value === "afternoon") {
+      shiftForm.setFieldsValue({
+        start_time: dayjs("13:00", "HH:mm"),
+        end_time: dayjs("17:00", "HH:mm"),
+      });
     }
   };
 
@@ -236,7 +250,7 @@ const AdminDoctorDetails = () => {
       );
       setSelectedAppointment(response.data.appointmentDetails);
     } catch (err) {
-      message.error("Failed to load appointment details");
+      toast.error("Failed to load appointment details");
       console.log(err);
     }
   };
@@ -395,6 +409,7 @@ const AdminDoctorDetails = () => {
                 { label: "Morning", value: "morning" },
                 { label: "Afternoon", value: "afternoon" },
               ]}
+              onChange={handleShiftTypeChange}
             />
           </Form.Item>
           <Form.Item

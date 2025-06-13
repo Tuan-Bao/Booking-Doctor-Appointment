@@ -35,6 +35,7 @@ import {
 import "./Appointments.css";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -310,10 +311,10 @@ const Appointments = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Payment successful");
-      fetchPatientAppointments(); // Refresh the list
+      toast.success("Payment successful");
+      fetchAppointments(); // Refresh the list
     } catch (err) {
-      message.error(err.response?.data?.message || "Payment failed");
+      toast.error(err.response?.data?.message || "Payment failed");
       console.log(err);
     }
   };
@@ -328,10 +329,10 @@ const Appointments = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Check in successful");
-      fetchPatientAppointments(); // Refresh the list
+      toast.success("Check in successful");
+      fetchAppointments(); // Refresh the list
     } catch (err) {
-      message.error(err.response?.data?.message || "Check in failed");
+      toast.error(err.response?.data?.message || "Check in failed");
       console.log(err);
     }
   };

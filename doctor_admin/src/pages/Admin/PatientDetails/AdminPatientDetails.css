@@ -11,6 +11,10 @@
   gap: 16px;
 }
 
+.patient-details-header .ant-space {
+  margin-left: auto;
+}
+
 .back-button {
   display: flex;
   align-items: center;
@@ -309,4 +313,35 @@
 
 .clear-filter-button {
   margin-top: 0px !important;
+}
+
+.update-profile-form {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.update-profile-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.update-profile-form .ant-form-item-label {
+  font-weight: 500;
+}
+
+.update-profile-form .ant-input,
+.update-profile-form .ant-select-selector,
+.update-profile-form .ant-picker {
+  border-radius: 4px;
+}
+
+.update-profile-form .ant-form-item-explain-error {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.update-profile-form .ant-form-item:last-child {
+  margin-bottom: 0;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }

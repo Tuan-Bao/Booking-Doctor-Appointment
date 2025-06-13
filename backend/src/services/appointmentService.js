@@ -72,7 +72,7 @@ export const bookAppointmentOnline = async (
     const shiftTime = appointment_datetime.slice(11, 19); // HH:mm:ss
     const hour = parseInt(shiftTime.split(":")[0]);
 
-    const shift_type = hour <= 12 ? "morning" : "afternoon";
+    const shift_type = hour < 13 ? "morning" : "afternoon";
 
     const shift = await DoctorShift.findOne({
       where: {
@@ -154,7 +154,11 @@ export const bookAppointmentOffline = async (
   const transaction = await db.sequelize.transaction();
   try {
     // định dạng thời gian hiện tại theo định dạng yyyy-mm-dd hh:mm:ss
-    const appointment_datetime = new Date().toISOString().slice(0, 19);
+    const vnString = new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      hour12: false,
+    });
+    const appointment_datetime = vnString.replace(" ", "T");
     const patient = await Patient.findByPk(patient_id, { transaction });
     if (!patient) throw new NotFoundError("Patient not found");
     const doctor = await Doctor.findByPk(doctor_id, {
@@ -177,21 +181,23 @@ export const bookAppointmentOffline = async (
     const shiftTime = appointment_datetime.slice(11, 19);
     const hour = parseInt(shiftTime.split(":")[0]);
 
-    const shift_type = hour <= 12 ? "morning" : "afternoon";
-
-    const shift = await DoctorShift.findOne({
-      where: {
-        doctor_id,
-        shift_date: shiftDate,
-        shift_type,
-        start_time: { [db.Sequelize.Op.lte]: shiftTime },
-        end_time: { [db.Sequelize.Op.gt]: shiftTime },
-      },
-      transaction,
-    });
-    if (!shift) {
-      throw new BadRequestError("Doctor is not available at this time");
-    }
+    const shift_type = hour < 13 ? "morning" : "afternoon";
+    // console.log(appointment_datetime);
+    // console.log(doctor_id);
+    // console.log(shiftDate, shiftTime, shift_type);
+    // const shift = await DoctorShift.findOne({
+    //   where: {
+    //     doctor_id,
+    //     shift_date: shiftDate,
+    //     shift_type,
+    //     start_time: { [db.Sequelize.Op.lte]: shiftTime },
+    //     end_time: { [db.Sequelize.Op.gt]: shiftTime },
+    //   },
+    //   transaction,
+    // });
+    // if (!shift) {
+    //   throw new BadRequestError("Doctor is not available at this time");
+    // }
     const appointmentTime = new Date(appointment_datetime);
     const doctorConflict = await Appointment.findOne({
       where: {
@@ -457,17 +463,6 @@ export const markPatientNotComing = async (appointment_id) => {
       throw new BadRequestError("Patient is already marked as not coming");
     }
 
-    // const now = new Date();
-    // const appointmentDate = new Date(appointment.appointment_datetime);
-    // const nowTimestamp = now.getTime();
-    // const appointmentTimestamp = appointmentDate.getTime();
-
-    // if (nowTimestamp <= appointmentTimestamp) {
-    //   throw new BadRequestError(
-    //     "Appointment cannot be marked patient not coming before the scheduled time."
-    //   );
-    // }
-
     if (appointment.status === "scheduled") {
       appointment.status = "no_show";
       appointment.arrival_status = "no_show";
@@ -509,6 +504,10 @@ export const getAllAppointments = async () => {
             { model: Specialization, as: "specialization" },
           ],
         },
+        {
+          model: Payment,
+          as: "payment",
+        },
       ],
       // order: [["appointment_datetime", "ASC"]],
       order: [
@@ -527,6 +526,9 @@ export const getAllAppointments = async () => {
     const formattedAppointments = appointments.map((a) => ({
       ...a.toJSON(),
       appointment_datetime: formatToVNTime(a.appointment_datetime),
+      checkin_time: a.checkin_time
+        ? formatToVNTime(a.checkin_time)
+        : formatToVNTime(a.appointment_datetime),
     }));
     return { message: "Success", appointments: formattedAppointments };
   } catch (error) {
@@ -685,6 +687,10 @@ export const getAppointments = async (
             { model: User, as: "user", attributes: { exclude: ["password"] } },
             { model: Specialization, as: "specialization" },
           ],
+        },
+        {
+          model: Payment,
+          as: "payment",
         },
       ],
       // order: [["appointment_datetime", "DESC"]],

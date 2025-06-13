@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, message } from "antd";
+import { Form, Input, Button, Card } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./ChangePassword.css";
 import { useAppContext } from "../../context/AppContext";
+import { toast } from "react-toastify";
 
 const ChangePassword = () => {
   const { API_URL } = useAppContext();
@@ -28,14 +29,14 @@ const ChangePassword = () => {
       );
 
       if (response.data.message === "Success") {
-        message.success("Password changed successfully!");
+        toast.success("Password changed successfully!");
         navigate("/");
       }
     } catch (error) {
       if (error.response?.data?.message) {
-        message.error(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        message.error("Failed to change password. Please try again.");
+        toast.error("Failed to change password. Please try again.");
       }
     } finally {
       setLoading(false);

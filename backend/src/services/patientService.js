@@ -619,3 +619,32 @@ export const getPaymentById = async (user_id, payment_id) => {
     throw new Error(error.message);
   }
 };
+
+export const deletePatient = async (user_id) => {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const user = await User.findByPk(user_id, {
+      include: [{ model: Patient, as: "patient" }],
+      transaction,
+    });
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const { patient } = user;
+    if (!patient) {
+      throw new NotFoundError("Patient not found");
+    }
+
+    await patient.destroy({ transaction });
+    await user.destroy({ transaction });
+    await transaction.commit();
+    return { message: "Success" };
+  } catch (error) {
+    await transaction.rollback();
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new Error(error.message);
+  }
+};

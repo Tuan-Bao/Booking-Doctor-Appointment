@@ -14,7 +14,6 @@ import {
   Select,
   Upload,
   Rate,
-  message,
 } from "antd";
 import {
   MailOutlined,
@@ -59,7 +58,7 @@ const Profile = () => {
           specialization_id: response.data.user.doctor.specialization_id,
         });
       } catch (error) {
-        message.error("Failed to fetch profile data");
+        toast.error("Failed to fetch profile data");
         console.error("Error fetching profile:", error);
       } finally {
         setLoading(false);
@@ -77,6 +76,7 @@ const Profile = () => {
         // console.log(response.data.specializations);
         setSpecializations(response.data.specializations);
       } catch (error) {
+        toast.error("Failed to fetch specializations");
         console.error("Error fetching specializations:", error);
       }
     };

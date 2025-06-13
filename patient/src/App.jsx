@@ -16,6 +16,7 @@ import Appointment from "./pages/Appointment/Appointment";
 import Footer from "./components/Footer/Footer";
 import PayAppointment from "./pages/PayAppointment/PayAppointment";
 import ChangePassword from "./pages/ChangePassword/ChangePassword";
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import { AppContextProvider } from "./context/AppContext";
 import PrivateRoute from "./utils/PrivateRoute";
 import PublicRoute from "./utils/PublicRoute";
@@ -23,6 +24,7 @@ import PublicRoute from "./utils/PublicRoute";
 const App = () => {
   return (
     <AppContextProvider>
+      <ScrollToTop />
       <div className="app">
         <ToastContainer />
         <Navbar />

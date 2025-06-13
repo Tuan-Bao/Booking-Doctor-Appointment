@@ -94,6 +94,19 @@ const Appointment = () => {
     const [hours, minutes] = time.split(":").map(Number);
     const timeInMinutes = hours * 60 + minutes;
 
+    // Kiểm tra thời gian đặt lịch phải trước ít nhất 2 tiếng
+    const now = new Date();
+    const selectedDateTime = new Date(selectedDate);
+    selectedDateTime.setHours(hours, minutes, 0, 0);
+
+    // Nếu ngày đặt lịch là hôm nay
+    if (isSameDay(now, selectedDateTime)) {
+      const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      if (selectedDateTime < twoHoursFromNow) {
+        return false;
+      }
+    }
+
     // Kiểm tra xem thời gian có nằm trong ca làm việc nào không
     const isInShift = shifts.some((shift) => {
       const [startHours, startMinutes] = shift.start_time
@@ -112,7 +125,6 @@ const Appointment = () => {
 
     // Kiểm tra xem thời gian đã có lịch hẹn nào chưa
     const selectedDateStr = format(selectedDate, "d/M/yyyy");
-    console.log(selectedDateStr);
     const isTimeBooked = appointments?.some((appointment) => {
       // Chuyển đổi appointment_datetime từ "HH:mm:ss dd/MM/yyyy" thành phút
       const [timeStr, dateStr] = appointment.appointment_datetime.split(" ");

@@ -17,7 +17,6 @@ import {
   Form,
   Input,
   Select,
-  message,
   Divider,
 } from "antd";
 import {
@@ -27,6 +26,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -268,7 +268,7 @@ const Dashboard = () => {
           res.data.appointmentDetails.prescription?.medicine_details || "",
       });
     } catch {
-      message.error("Failed to load appointment details");
+      toast.error("Failed to load appointment details");
     } finally {
       setModalLoading(false);
     }
@@ -312,11 +312,11 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      message.success("Medical record and prescription added successfully");
+      toast.success("Medical record and prescription added successfully");
       fetchDashboardData();
       handleModalCancel();
     } catch (error) {
-      message.error("Failed to add medical record and prescription");
+      toast.error("Failed to add medical record and prescription");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -333,10 +333,10 @@ const Dashboard = () => {
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Medical record updated successfully");
+      toast.success("Medical record updated successfully");
       fetchDashboardData();
     } catch (error) {
-      message.error("Failed to update medical record");
+      toast.error("Failed to update medical record");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -353,10 +353,10 @@ const Dashboard = () => {
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Prescription updated successfully");
+      toast.success("Prescription updated successfully");
       fetchDashboardData();
     } catch (error) {
-      message.error("Failed to update prescription");
+      toast.error("Failed to update prescription");
       console.error("Error:", error);
     } finally {
       setModalLoading(false);
@@ -601,7 +601,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="detail-item">
-                  <span className="detail-label">Insurance</span>
+                  <span className="detail-label">Health Insurance Code</span>
                   <span className="detail-value">
                     {dashboardData.nextPatient.patient?.insurance_number ||
                       "Unknown"}
@@ -688,10 +688,10 @@ const Dashboard = () => {
                       {},
                       { headers: { Authorization: `Bearer ${token}` } }
                     );
-                    message.success("Status updated");
+                    toast.success("Status updated");
                     // fetchDashboardData();
                   } catch {
-                    message.error("Failed to update status");
+                    toast.error("Failed to update status");
                   } finally {
                     setModalLoading(false);
                   }

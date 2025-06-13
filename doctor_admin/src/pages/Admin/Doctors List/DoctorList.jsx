@@ -402,7 +402,10 @@ const AdminDoctorList = () => {
       <Card className="doctor-table-card">
         <div className="doctor-table-header">
           {/* Thanh tìm kiếm */}
-          <Card className="doctor-search-card" style={{ marginBottom: 16 }}>
+          <Card
+            className="doctor-search-card"
+            style={{ marginBottom: 16, marginLeft: 16 }}
+          >
             <Space>
               <Select
                 defaultValue="username"
